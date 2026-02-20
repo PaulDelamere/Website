@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features - Balancr</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+
+        :root {
+            --color-sky-top: #FFE4E6; 
+            --color-sky-mid: #FFF0D4; 
+            --color-sky-low: #E0D7F5; 
+            --color-text-main: #4A3B52;
+            --color-text-muted: #8E8499;
+            --color-accent: #6C5CE7; 
+            --radius-lg: 32px;
+            --radius-md: 20px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, 
+                var(--color-sky-top) 0%, 
+                var(--color-sky-mid) 20%, 
+                var(--color-sky-low) 60%, 
+                #F9F7FD 100%);
+            color: var(--color-text-main);
+            overflow-x: hidden;
+            border: 12px solid #FFFBF7;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* ── Ambient Background Clouds ── */
+        .ambient-cloud {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            animation: drift-cloud 40s infinite alternate linear;
+        }
+        .cloud-1 { width: 700px; height: 700px; top: -100px; left: -200px; opacity: 0.6; }
+        .cloud-2 { width: 900px; height: 900px; top: 40%; right: -300px; opacity: 0.4; background: radial-gradient(circle, #E0D7F5 0%, rgba(255,255,255,0) 70%); }
+
+        @keyframes drift-cloud {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, -20px) scale(1.1); }
+        }
+
+        /* ── Navigation ── */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 4rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 24px -12px rgba(74, 59, 82, 0.08);
+        }
+        .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: 1.8rem; letter-spacing: -0.02em; display: flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--color-text-main);}
+        .logo-mark { width: 12px; height: 12px; background: var(--color-accent); border-radius: 50%; opacity: 0.7; }
+        .nav-links { display: flex; gap: 2rem; font-size: 0.95rem; font-weight: 500; }
+        .nav-links a { text-decoration: none; color: var(--color-text-main); transition: color 0.2s; }
+        .nav-links a.active { color: var(--color-accent); font-weight: 600; }
+        .nav-links a:hover { color: var(--color-accent); }
+        
+        .cta-button {
+            padding: 0.8rem 1.8rem; background: linear-gradient(180deg, var(--color-text-main) 0%, #322638 100%); color: white;
+            border-radius: 100px; text-decoration: none; font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 12px rgba(74, 59, 82, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+        .cta-button:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 24px -6px rgba(108, 92, 231, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            background: linear-gradient(180deg, var(--color-accent) 0%, #5c4fd0 100%);
+        }
+
+        .cta-button.btn-large {
+            font-size: 1.1rem;
+            padding: 1rem 2.5rem;
+        }
+
+        .cta-button.btn-secondary {
+            background: rgba(255, 255, 255, 0.6);
+            color: var(--color-text-main);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .cta-button.btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: var(--color-accent) !important;
+            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.15) !important;
+        }
+
+        /* ── Core Glass Class ── */
+        .premium-glass-card,
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.3) 100%);
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow:
+                0 2px 4px -1px rgba(74, 59, 82, 0.03),
+                0 8px 16px -2px rgba(74, 59, 82, 0.04),
+                0 24px 48px -8px rgba(74, 59, 82, 0.08),
+                inset 0 1px 1px rgba(255, 255, 255, 1),
+                inset 0 -1px 1px rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-lg);
+        }
+
+        /* ── Typography & Layout ── */
+        .container { max-width: 1200px; margin: 0 auto; padding: 4rem 2rem; }
+
+        .feat-hero { text-align: center; padding: 4rem 0 6rem; max-width: 800px; margin: 0 auto; }
+        .feat-hero h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 4.5rem; line-height: 1.1; font-weight: 700; margin-bottom: 1.5rem; letter-spacing: -0.02em; }
+        .feat-hero h1 i { font-style: italic; font-weight: 600; background: linear-gradient(135deg, var(--color-accent) 0%, #FF9A9E 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding-right: 8px; }
+        .feat-hero p { font-size: 1.25rem; color: var(--color-text-muted); line-height: 1.6; text-wrap: balance; }
+
+        /* ── Alternating Rows ── */
+        .feat-row { display: flex; align-items: center; gap: 6rem; margin-bottom: 10rem; opacity: 0; transform: translateY(40px); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .feat-row.visible { opacity: 1; transform: translateY(0); }
+        .feat-row.reverse { flex-direction: row-reverse; }
+        
+        .feat-text { flex: 1.1; }
+        .feat-visual { flex: 0.9; position: relative; display: flex; justify-content: center; }
+
+        .feat-tag { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em; color: var(--color-accent); background: rgba(108, 92, 231, 0.1); padding: 0.5rem 1rem; border-radius: 100px; margin-bottom: 1.5rem; border: 1px solid rgba(108, 92, 231, 0.15); }
+        .feat-h2 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.5rem; font-weight: 700; margin-bottom: 1.2rem; letter-spacing: -0.04em; line-height: 1.05; }
+        .feat-p { font-size: 1.1rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 2.5rem; }
+
+        .feat-list { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; }
+        .feat-list li { display: flex; align-items: flex-start; gap: 1rem; }
+        .feat-list-icon { flex-shrink: 0; width: 36px; height: 36px; background: rgba(108, 92, 231, 0.1); color: var(--color-accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-top: 2px; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.1); }
+        .feat-list-text strong { display: block; color: var(--color-text-main); font-size: 1rem; margin-bottom: 0.3rem; }
+        .feat-list-text span { font-size: 0.95rem; color: var(--color-text-muted); line-height: 1.5; display: block; }
+
+        /* ── Bento Box Grid ── */
+        .bento-section { padding-top: 2rem; opacity: 0; transform: translateY(40px); transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); margin-bottom: 8rem;}
+        .bento-section.visible { opacity: 1; transform: translateY(0); }
+        .bento-header { text-align: center; margin-bottom: 4rem; }
+        
+        .bento-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; grid-auto-rows: minmax(280px, auto); }
+        .bento-item { display: flex; flex-direction: column; padding: 2.5rem; position: relative; overflow: hidden; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); cursor: default; }
+        .bento-item:hover {
+            transform: translateY(-6px);
+            box-shadow:
+                0 2px 4px -1px rgba(74, 59, 82, 0.02),
+                0 12px 24px -4px rgba(74, 59, 82, 0.06),
+                0 32px 64px -12px rgba(108, 92, 231, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 1),
+                inset 0 -1px 1px rgba(255, 255, 255, 0.3) !important;
+        }
+
+        h1, .section-heading, .feat-h2 {
+            letter-spacing: -0.04em !important;
+            line-height: 1.05;
+        }
+        
+        .bento-icon { width: 56px; height: 56px; border-radius: 16px; background: white; display: flex; align-items: center; justify-content: center; color: var(--color-accent); margin-bottom: 1.5rem; box-shadow: 0 8px 16px rgba(0,0,0,0.04); }
+        .bento-item h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.8rem; color: var(--color-text-main); }
+        .bento-item p { font-size: 0.95rem; color: var(--color-text-muted); line-height: 1.6; }
+
+        @media (max-width: 900px) {
+            .feat-row, .feat-row.reverse { flex-direction: column; gap: 4rem; margin-bottom: 6rem; }
+            .bento-grid { grid-template-columns: 1fr; }
+            .feat-hero h1 { font-size: 3.5rem; }
+            nav { padding: 1.5rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-cloud cloud-1"></div>
+    <div class="ambient-cloud cloud-2"></div>
+
+    <nav>
+        <a href="index.html" class="logo"><div class="logo-mark"></div>Balancr</a>
+        <div class="nav-links">
+            <a href="features.html" class="active">Features</a>
+            <a href="#">Pricing</a>
+            <a href="#">Manifesto</a>
+        </div>
+        <a href="#" class="cta-button">Start Trial</a>
+    </nav>
+
+    <div class="container">
+        
+        <header class="feat-hero">
+            <div class="feat-tag" style="margin-bottom: 1.5rem;">The Platform</div>
+            <h1>Everything you need to recover revenue, <i>beautifully.</i></h1>
+            <p>We’ve mapped every traditional credit controller workflow into a single, AI-powered toolkit designed to save hours of admin while actively protecting your client relationships.</p>
+        </header>
+
+        <div class="feat-row scroll-reveal">
+            <div class="feat-text">
+                <div class="feat-tag">Phase 1: Intelligence</div>
+                <h2 class="feat-h2">Total context. Zero digging.</h2>
+                <p class="feat-p">Great credit control requires nuance. Before Balancr drafts a single word, it pulls together every piece of the puzzle so you never chase a client blindly.</p>
+                
+                <ul class="feat-list">
+                    <li>
+                        <div class="feat-list-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
+                        <div class="feat-list-text">
+                            <strong>Live Ledger Sync</strong>
+                            <span>Pulls payment history, invoice data, contact details, and lifetime value (LTV) directly from Xero.</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feat-list-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg></div>
+                        <div class="feat-list-text">
+                            <strong>Inbox Integration</strong>
+                            <span>Reads full historical email threads to understand previous payment promises and communication tone.</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feat-list-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+                        <div class="feat-list-text">
+                            <strong>Human-in-the-Loop Guidance</strong>
+                            <span>Easily add internal notes (e.g., "VIP client, tread lightly") which the AI permanently factors into future workflows.</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="feat-visual">
+                <div class="glass-panel" style="width: 100%; max-width: 450px; padding: 2.5rem; position: relative;">
+                    <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #7E6F95; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span>Data Profile Compiled</span>
+                        <span style="background: white; padding: 4px 10px; border-radius: 100px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); color: var(--color-text-main);">Acorn Corp</span>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="background: rgba(255,255,255,0.6); padding: 1rem 1.5rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.8); display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 36px; height: 36px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); color: #10B981;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">Xero Data</div>
+                                <div style="font-weight: 600; font-size: 0.95rem;">LTV: £145,000</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.6); padding: 1rem 1.5rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.8); display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 36px; height: 36px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); color: #3B82F6;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--color-text-muted); font-weight: 700; text-transform: uppercase;">Email Thread</div>
+                                <div style="font-weight: 600; font-size: 0.95rem;">Replied: "Will pay Friday."</div>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(108, 92, 231, 0.08); border-left: 3px solid var(--color-accent); padding: 1rem 1.5rem; border-radius: 0 16px 16px 0;">
+                            <div style="font-size: 0.75rem; color: var(--color-accent); font-weight: 800; text-transform: uppercase; margin-bottom: 0.2rem;">Controller Override</div>
+                            <div style="font-style: italic; font-size: 0.9rem; color: var(--color-text-main); line-height: 1.5;">"Client is currently undergoing a merger. Be highly accommodating."</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="feat-row reverse scroll-reveal">
+            <div class="feat-text">
+                <div class="feat-tag">Phase 2: Smart Routing</div>
+                <h2 class="feat-h2">Automate the routine. Handcraft the complex.</h2>
+                <p class="feat-p">Not all overdue invoices are created equal. Balancr intelligently splits your workflow exactly at the 30-day mark, ensuring the right level of attention is applied.</p>
+                
+                <ul class="feat-list">
+                    <li>
+                        <div class="feat-list-icon" style="background: rgba(16, 185, 129, 0.1); color: #10B981; font-weight: 800; font-size: 0.75rem;">&lt;30</div>
+                        <div class="feat-list-text">
+                            <strong>Automated Batching (Under 30 Days)</strong>
+                            <span>Traditional, gentle due-date and nudge reminders are generated and sent in optimized background batches.</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feat-list-icon" style="background: rgba(245, 158, 11, 0.1); color: #F59E0B; font-weight: 800; font-size: 0.75rem;">&gt;30</div>
+                        <div class="feat-list-text">
+                            <strong>Enhanced Kanban (Over 30 Days)</strong>
+                            <span>Problem accounts are isolated on a priority board for strategic, hands-on credit chasing.</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feat-list-icon" style="background: rgba(59, 130, 246, 0.1); color: #3B82F6;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                        <div class="feat-list-text">
+                            <strong>Scheduled Follow-ups</strong>
+                            <span>Customers in the enhanced flow never get lost if they ghost a payment promise or fail to reply.</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="feat-visual">
+                <div class="glass-panel" style="width: 100%; max-width: 480px; padding: 2rem; background: linear-gradient(135deg, rgba(240, 253, 244, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%);">
+                    
+                    <div style="background: white; border-radius: 16px; padding: 1.2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: -1rem; border-left: 4px solid #10B981; transform: scale(0.95); opacity: 0.7;">
+                        <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #059669; margin-bottom: 0.5rem;">Batch Automation</div>
+                        <div style="font-size: 0.95rem; font-weight: 700;">42 Invoices Nudged</div>
+                    </div>
+
+                    <div style="background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 16px 32px rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.2); position: relative; z-index: 2; border-top: 4px solid #F59E0B;">
+                        <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #D97706; margin-bottom: 1rem; display: flex; justify-content: space-between;">
+                            Enhanced Kanban 
+                            <span style="background: #FEE2E2; color: #DC2626; padding: 2px 8px; border-radius: 100px;">Requires Action</span>
+                        </div>
+                        <div style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.2rem; color: var(--color-text-main);">Thornfield Brewery</div>
+                        <div style="font-size: 0.85rem; color: #EF4444; font-weight: 600; margin-bottom: 1rem;">£4,200 • 52 Days Overdue</div>
+                        
+                        <div style="background: #FEF3C7; color: #D97706; padding: 0.8rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            Scheduled Follow-up Triggered Today
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="feat-row scroll-reveal">
+            <div class="feat-text">
+                <div class="feat-tag">Phase 3: Escalation Engine</div>
+                <h2 class="feat-h2">Resolve obstacles, don't just chase them.</h2>
+                <p class="feat-p">When customers push back with genuine problems, automated reminders look foolish and damage trust. Balancr identifies obstacles and triggers intelligent workflows to solve the issue.</p>
+                
+                <ul class="feat-list">
+                    <li>
+                        <div class="feat-list-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+                        <div class="feat-list-text">
+                            <strong>Launch Investigations</strong>
+                            <span>Easily pause the chase to route paperwork or service disputes to Sales or Customer Service.</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="feat-list-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+                        <div class="feat-list-text">
+                            <strong>Factor in Results</strong>
+                            <span>Once the dispute is settled (e.g., a credit note is applied in Xero), the AI automatically factors the result into its context and adjusts the balance for the next chase.</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="feat-visual">
+                <div class="glass-panel" style="width: 100%; max-width: 480px; padding: 2rem; display: flex; flex-direction: column; gap: 1rem;">
+                    
+                    <div style="align-self: flex-start; background: white; padding: 1rem 1.2rem; border-radius: 16px 16px 16px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.05); max-width: 90%; font-size: 0.9rem; line-height: 1.5; color: var(--color-text-main);">
+                        "We can't pay this yet, the warehouse said two pallets were damaged."
+                    </div>
+                    
+                    <div style="align-self: center; font-size: 0.75rem; font-weight: 700; color: #EF4444; background: #FEE2E2; padding: 6px 16px; border-radius: 100px; display: flex; align-items: center; gap: 6px; margin: 0.5rem 0;">
+                        <div style="width: 6px; height: 6px; background: #EF4444; border-radius: 50%; animation: ib-blink 1.5s infinite;"></div>
+                        Chase Paused • Ticket Routed to Sales
+                    </div>
+                    
+                    <div style="align-self: flex-end; background: linear-gradient(135deg, var(--color-accent), #A29BFE); color: white; padding: 1rem 1.2rem; border-radius: 16px 16px 0 16px; box-shadow: 0 12px 24px rgba(108, 92, 231, 0.2); max-width: 90%; font-size: 0.9rem; line-height: 1.5;">
+                        "Hi James, sorry about that! I've spoken to sales and applied a credit note for the pallets. When can we expect the remaining balance?"
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <section class="bento-section scroll-reveal">
+            <div class="bento-header">
+                <div class="feat-tag" style="margin-bottom: 1rem;">Phase 4: Inbox Triage</div>
+                <h2>Turn messy replies<br>into one-click resolutions.</h2>
+                <p class="feat-p" style="max-width: 650px; margin: 0 auto;">Credit control isn't just sending emails; it's handling the messy replies. Balancr offers guided, one-click workflows for the most common administrative roadblocks.</p>
+            </div>
+
+            <div class="bento-grid">
+                
+                <div class="glass-panel bento-item">
+                    <div class="bento-icon" style="color: var(--color-accent);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    </div>
+                    <h3>Dynamic Tone Selection</h3>
+                    <p>Review the AI-generated draft and instantly toggle between options like "Gentle Nudge," "Firm Follow-up," or "Final Notice" before clicking send.</p>
+                </div>
+
+                <div class="glass-panel bento-item">
+                    <div class="bento-icon" style="color: #3B82F6; background: rgba(59, 130, 246, 0.08);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    <h3>Attach Missing Paperwork</h3>
+                    <p>If a customer replies asking for a copy, Balancr retrieves the exact PDF invoice or statement from Xero and drafts the reply with it already attached.</p>
+                </div>
+
+                <div class="glass-panel bento-item">
+                    <div class="bento-icon" style="color: #10B981; background: rgba(16, 185, 129, 0.08);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    </div>
+                    <h3>"Already Paid" Verification</h3>
+                    <p>When a customer claims payment was sent, a guided workflow helps you check payment channels and bank feeds before drafting a 'Thank You' or 'Not Found' response.</p>
+                </div>
+
+                <div class="glass-panel bento-item">
+                    <div class="bento-icon" style="color: #F59E0B; background: rgba(245, 158, 11, 0.08);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5c-1.1 0-2 .9-2 2v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                    </div>
+                    <h3>CRM Self-Healing</h3>
+                    <p>Detects when a customer replies from a new address or asks to "send to accounts@..." and offers a one-click workflow to permanently update the Xero record.</p>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <footer style="padding: 6rem 2rem 4rem; text-align: center; border-top: 1px solid rgba(108, 92, 231, 0.1); margin-top: 4rem;">
+        <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 3rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--color-text-main); letter-spacing: -0.02em;">Ready to upgrade your workflow?</h2>
+        <p style="font-size: 1.15rem; color: var(--color-text-muted); margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto;">Stop sending robotic reminders and start clearing your ledger with intelligent, context-aware workflows.</p>
+        <a href="#" class="cta-button" style="font-size: 1.1rem; padding: 1rem 2.5rem; box-shadow: 0 8px 24px rgba(108, 92, 231, 0.3);">Start 14-Day Free Trial</a>
+        
+        <p style="margin-top: 6rem; font-size: 0.9rem; color: var(--color-text-muted);">© 2026 Balancr Inc.</p>
+        <div style="margin-top: 1rem; font-weight: 600; opacity: 0.6; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.7rem; color: var(--color-text-muted);">Made by Pantheon Tools</div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.15 }); 
+
+            document.querySelectorAll('.scroll-reveal').forEach((el) => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

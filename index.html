@@ -1,0 +1,3328 @@
+<html lang="en" vid="0"><head vid="1">
+    <meta charset="UTF-8" vid="2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" vid="3">
+    <title vid="4">Balancr - AI Credit Control</title>
+    <style vid="5">
+        
+
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+
+        :root {
+            
+            --color-sky-top: #FFE4E6; 
+            --color-sky-mid: #FFF0D4; 
+            --color-sky-low: #E0D7F5; 
+            --color-cloud: #FFFFFF;
+            --color-text-main: #4A3B52;
+            --color-text-muted: #8E8499;
+            --color-accent: #6C5CE7; 
+            
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.65);
+            --glass-shadow: 0 8px 32px 0 rgba(100, 100, 130, 0.1);
+            
+            --radius-lg: 32px;
+            --radius-md: 20px;
+            --radius-sm: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            overflow-y: scroll;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(180deg, 
+                var(--color-sky-top) 0%, 
+                var(--color-sky-mid) 40%, 
+                var(--color-sky-low) 80%, 
+                #F9F7FD 100%);
+            color: var(--color-text-main);
+            min-height: 250vh; 
+            overflow-x: hidden;
+            
+            border: 12px solid #FFFBF7;
+            position: relative;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        
+        .ambient-cloud {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            animation: drift-cloud 40s infinite alternate linear;
+        }
+
+        .cloud-1 { width: 600px; height: 600px; top: -100px; left: -100px; opacity: 0.6; }
+        .cloud-2 { width: 800px; height: 800px; bottom: 10%; right: -200px; opacity: 0.5; animation-delay: -10s; background: radial-gradient(circle, #E0D7F5 0%, rgba(255,255,255,0) 70%); }
+        .cloud-3 { width: 400px; height: 400px; top: 40%; left: 30%; opacity: 0.4; animation-duration: 60s; }
+
+        @keyframes drift-cloud {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(40px, -20px) scale(1.1); }
+        }
+
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 4rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 24px -12px rgba(74, 59, 82, 0.08);
+        }
+
+        .logo {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 600;
+            font-size: 1.8rem;
+            letter-spacing: -0.02em;
+            color: var(--color-text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-mark {
+            width: 12px;
+            height: 12px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: var(--color-text-main);
+            transition: color 0.2s ease;
+        }
+        .nav-links a:hover {
+            color: var(--color-accent);
+        }
+
+        .cta-button {
+            padding: 0.8rem 1.8rem;
+            background: linear-gradient(180deg, var(--color-text-main) 0%, #322638 100%);
+            color: white;
+            border-radius: 100px;
+            text-decoration: none;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow:
+                0 4px 12px rgba(74, 59, 82, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow:
+                0 12px 24px -6px rgba(108, 92, 231, 0.5),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            background: linear-gradient(180deg, var(--color-accent) 0%, #5c4fd0 100%);
+        }
+
+        .cta-button.btn-large {
+            font-size: 1.1rem;
+            padding: 1rem 2.5rem;
+        }
+
+        .cta-button.btn-secondary {
+            background: rgba(255, 255, 255, 0.6);
+            color: var(--color-text-main);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .cta-button.btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: var(--color-accent) !important;
+            box-shadow: 0 8px 24px rgba(108, 92, 231, 0.15) !important;
+        }
+
+        
+        header {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 6rem 4rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 5rem;
+            line-height: 1.1;
+            font-weight: 700;
+            color: var(--color-text-main);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        h1 i {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-style: italic;
+            font-weight: 600;
+            /* Beautiful gradient for the word "gentle" */
+            background: linear-gradient(135deg, var(--color-accent) 0%, #FF9A9E 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding-right: 8px; /* Prevents italic text from clipping */
+        }
+
+        p.hero-sub {
+            font-size: 1.25rem;
+            color: var(--color-text-main);
+            opacity: 0.7;
+            max-width: 500px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+
+        
+        .feature-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 6rem 4rem 4rem;
+            text-align: center;
+        }
+
+        .section-heading {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--color-text-main);
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        /* Tighten Massive Text */
+        h1, .section-heading, .feat-h2 {
+            letter-spacing: -0.04em !important;
+            line-height: 1.05;
+        }
+
+        .section-description {
+            font-size: 1.15rem;
+            color: var(--color-text-main);
+            opacity: 0.7;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+
+        .widget-sky {
+            position: relative;
+            height: 650px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            perspective: 1000px;
+            pointer-events: none;
+        }
+
+        .ui-card {
+            position: absolute;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--glass-shadow);
+            opacity: 0; 
+            transform: translateY(100px);
+            animation: float-in 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards,
+                       hover-bob 6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        
+        .ui-card.variant-warm {
+            background: rgba(255, 245, 240, 0.5); 
+        }
+        .ui-card.variant-cool {
+            background: rgba(240, 240, 255, 0.5); 
+        }
+
+        
+        
+        
+        .widget-main {
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            z-index: 10;
+            animation-delay: 0.2s;
+            animation-duration: 1.2s, 5.5s;
+        }
+
+        
+        .widget-analysis {
+            top: 200px;
+            left: 5%;
+            width: 280px;
+            animation-delay: 0.5s;
+            animation-name: float-in-left, hover-bob;
+            animation-duration: 1.2s, 7.2s;
+        }
+
+        
+        .widget-email {
+            top: 350px;
+            right: 8%;
+            width: 340px;
+            animation-delay: 0.8s;
+            animation-name: float-in-right, hover-bob;
+            animation-duration: 1.2s, 6.8s;
+        }
+
+        
+        .widget-approve {
+            top: 600px;
+            left: 40%;
+            width: 260px;
+            z-index: 5;
+            animation-delay: 1.1s;
+            animation-duration: 1.2s, 6.1s;
+        }
+
+        
+        .ui-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 0.8rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .ui-title {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .ui-badge {
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 12px;
+            color: var(--color-accent);
+            font-weight: 600;
+        }
+
+        .ui-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+
+        .data-val {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--color-text-main);
+        }
+
+        .data-label {
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 4px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%);
+            width: 75%;
+        }
+
+        .ai-typing {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: var(--color-text-main);
+            line-height: 1.5;
+            position: relative;
+            padding-left: 1rem;
+            border-left: 2px solid var(--color-accent);
+        }
+
+        .btn-mini {
+            width: 100%;
+            padding: 0.6rem;
+            margin-top: 0.5rem;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: var(--radius-sm);
+            color: var(--color-text-main);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+        }
+        .btn-mini:hover {
+            background: var(--color-text-main);
+            color: white;
+        }
+
+        .icon-inline {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            line-height: 1;
+        }
+
+        .icon-inline svg {
+            width: 1em;
+            height: 1em;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .premium-glass-card,
+        .ui-card,
+        .glass-panel,
+        .intel-brief,
+        .el-card,
+        .tr-card,
+        .pk-draft-inner {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.3) 100%) !important;
+            backdrop-filter: blur(24px) saturate(120%) !important;
+            -webkit-backdrop-filter: blur(24px) saturate(120%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            box-shadow:
+                0 2px 4px -1px rgba(74, 59, 82, 0.03),
+                0 8px 16px -2px rgba(74, 59, 82, 0.04),
+                0 24px 48px -8px rgba(74, 59, 82, 0.08),
+                inset 0 1px 1px rgba(255, 255, 255, 1),
+                inset 0 -1px 1px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Widen Micro-labels */
+        .ui-title, .tr-badge, .pk-col-label, .feat-tag, .ib-tone-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        /* Balance your text blocks so they don't stretch too wide on big monitors */
+        p.hero-sub, .section-description {
+            text-wrap: balance; 
+        }
+
+        
+        @keyframes float-in {
+            0% { opacity: 0; transform: translateY(80px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes float-in-left {
+            0% { opacity: 0; transform: translate(-40px, 80px) scale(0.95); }
+            100% { opacity: 1; transform: translate(0, 0) scale(1); }
+        }
+        @keyframes float-in-right {
+            0% { opacity: 0; transform: translate(40px, 80px) scale(0.95); }
+            100% { opacity: 1; transform: translate(0, 0) scale(1); }
+        }
+        @keyframes hover-bob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        
+        .scroll-trigger {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.5;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-style: italic;
+            font-weight: 500;
+        }
+
+        footer {
+            padding: 4rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            mix-blend-mode: multiply;
+        }
+
+        .pantheon-mark {
+            margin-top: 1rem;
+            font-weight: 600;
+            opacity: 0.6;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+        }
+
+        /* ── WIDGET 1: INTELLIGENCE BRIEF (£50k Redesign) ── */
+
+.intel-brief-wrapper {
+    max-width: 680px; /* Slightly wider to accommodate the grid */
+    margin: -2rem auto 4rem;
+    padding: 0 1.5rem;
+    min-height: 720px;
+    height: auto;
+}
+
+        .intel-brief {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(252, 251, 255, 0.8) 100%);
+            backdrop-filter: blur(24px) saturate(120%);
+            -webkit-backdrop-filter: blur(24px) saturate(120%);
+            border: 1px solid rgba(255, 255, 255, 1);
+            border-radius: 24px;
+            padding: 2.2rem;
+            box-shadow:
+                0 24px 48px -12px rgba(74, 59, 82, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 1),
+                inset 0 0 0 1px rgba(108, 92, 231, 0.05);
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-sizing: border-box;
+        }
+
+        .ib-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.1);
+        }
+
+        .ib-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .ib-client {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--color-text-main);
+        }
+
+        /* ACT 1: Context Grid (Snappy Bento Cards) */
+        .ib-context-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .ib-metric {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(108, 92, 231, 0.1);
+            border-radius: 16px;
+            padding: 1rem;
+            box-shadow: 0 4px 12px -2px rgba(74, 59, 82, 0.03);
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); /* The Apple Spring */
+        }
+
+        .ib-metric.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .ib-metric.ingested {
+            opacity: 0.4;
+            transform: scale(0.96);
+            filter: grayscale(100%);
+        }
+
+        .ib-metric-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+        .ib-metric-icon svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2.5;
+        }
+
+        .ib-metric-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--color-text-muted);
+            letter-spacing: 0.08em;
+            margin-bottom: 0.2rem;
+        }
+        .ib-metric-val {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--color-text-main);
+        }
+        .ib-metric-sub {
+            font-size: 0.75rem;
+            color: #A391B3;
+            font-weight: 500;
+            margin-top: 0.2rem;
+        }
+
+        /* ACT 2: AI Processing & Synthesis */
+        .ib-ai-container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ib-ai-loader {
+            align-items: center;
+            gap: 0.8rem;
+            background: rgba(108, 92, 231, 0.05);
+            border: 1px solid rgba(108, 92, 231, 0.15);
+            padding: 0.6rem 1.2rem;
+            border-radius: 100px;
+            width: max-content;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.3s ease;
+            display: none;
+        }
+        .ib-ai-loader.visible {
+            display: flex;
+            opacity: 1;
+            transform: scale(1);
+        }
+        .ib-ai-loader.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .ib-ai-spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(108, 92, 231, 0.2);
+            border-top-color: var(--color-accent);
+            border-radius: 50%;
+            animation: ib-spin 0.6s linear infinite;
+        }
+        @keyframes ib-spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .ib-synthesis-box {
+            background: linear-gradient(135deg, rgba(250, 248, 255, 0.9), rgba(255, 255, 255, 0.5));
+            border-left: 3px solid var(--color-accent);
+            border-radius: 0 12px 12px 0;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 8px 24px -4px rgba(108, 92, 231, 0.08);
+            display: none;
+            opacity: 0;
+            transform: translateX(-15px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .ib-synthesis-box.visible {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .ib-synth-title {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--color-accent);
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ib-synth-title svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+            stroke-width: 2;
+        }
+        .ib-synth-text {
+            font-size: 0.95rem;
+            color: var(--color-text-main);
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
+        /* ACT 3: Tones & Output Area */
+        .ib-output-area {
+            display: none;
+            flex-direction: column;
+            gap: 1.2rem;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .ib-output-area.visible {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .ib-tone-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+        .ib-tone-title {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--color-text-muted);
+            letter-spacing: 0.08em;
+            margin-right: 0.5rem;
+        }
+        .ib-tone-pill {
+            padding: 0.4rem 0.9rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #FFFFFF;
+            color: #8E8499;
+            border: 1px solid rgba(0,0,0,0.08);
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .ib-tone-pill.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        /* The aggressive snap selection */
+        .ib-tone-pill.selected {
+            background: var(--color-accent);
+            color: #FFFFFF;
+            border-color: var(--color-accent);
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+            transform: scale(1.05);
+        }
+
+        .ib-composer {
+            background: #FFFFFF;
+            border: 1px solid rgba(108, 92, 231, 0.15);
+            border-radius: 16px;
+            box-shadow: 0 16px 32px -12px rgba(74, 59, 82, 0.1), inset 0 1px 1px rgba(255,255,255,1);
+            overflow: hidden;
+        }
+        .ib-composer-header {
+            background: #FDFBFF;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 1rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+        }
+        .ib-composer-header span {
+            color: var(--color-text-muted);
+            font-weight: 600;
+            width: 45px;
+            display: inline-block;
+        }
+        .ib-composer-header strong {
+            color: var(--color-text-main);
+            font-weight: 600;
+        }
+
+        .ib-composer-body {
+            padding: 1.2rem;
+            font-size: 0.9rem;
+            color: var(--color-text-main);
+            line-height: 1.6;
+            min-height: 120px;
+            white-space: pre-wrap;
+        }
+
+        .ib-cursor {
+            display: inline-block;
+            width: 6px;
+            height: 1.1em;
+            background: var(--color-accent);
+            vertical-align: middle;
+            margin-left: 4px;
+            animation: ib-blink 0.8s step-end infinite;
+        }
+        @keyframes ib-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .ib-actions {
+            display: flex;
+            justify-content: flex-end;
+            padding: 1rem 1.2rem;
+            background: rgba(0,0,0,0.015);
+            border-top: 1px solid rgba(0,0,0,0.04);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .ib-actions.visible {
+            opacity: 1;
+        }
+        .ib-approve-btn {
+            background: linear-gradient(135deg, var(--color-accent), #A29BFE);
+            color: white;
+            padding: 0.7rem 1.4rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: default;
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
+        }
+
+        /* ── Customer Resolution Journey Widget (Aesthetic Upgrade) ── */
+        .el-wrapper {
+            max-width: 980px;
+            margin: 0 auto 4rem;
+            padding: 0 1.5rem;
+            position: relative;
+            height: 600px;
+        }
+
+        /* The ambient background glow behind the widget */
+        .el-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 700px;
+            height: 500px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, rgba(59, 130, 246, 0.08) 40%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .el-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 32px;
+            padding: 2.5rem;
+            box-shadow:
+                0 24px 48px -12px rgba(74, 59, 82, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 0.9),
+                inset 0 -1px 1px rgba(255, 255, 255, 0.3) !important;
+            display: flex;
+            gap: 3.5rem;
+            height: 600px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* ── Left Side: The Scrolling Thread ── */
+        .el-thread {
+            flex: 1.4;
+            position: relative;
+            height: 100%;
+            overflow: hidden;
+            /* Creates a beautiful fade-out effect at the top and bottom */
+            -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 85%, transparent 100%);
+            mask-image: linear-gradient(180deg, transparent 0%, #000 15%, #000 85%, transparent 100%);
+        }
+
+        .el-thread-track {
+            position: relative;
+            /* Smoothly translates up as the workflow progresses */
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            padding-top: 100px;
+            padding-bottom: 250px; /* Allows the last step to scroll up fully */
+        }
+
+        .el-thread-line {
+            position: absolute;
+            left: 23px;
+            top: 100px; /* Matches padding-top */
+            bottom: 250px; /* Matches padding-bottom */
+            width: 3px;
+            background: rgba(108, 92, 231, 0.1);
+            border-radius: 4px;
+            z-index: 0;
+        }
+
+        .el-thread-progress {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            background: linear-gradient(180deg, #A29BFE, var(--color-accent), #38BDF8);
+            border-radius: 4px;
+            height: 0px; /* Controlled by JS in pixels now */
+            transition: height 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            box-shadow: 0 0 12px rgba(108, 92, 231, 0.4);
+        }
+
+        .el-step {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2.2rem;
+            opacity: 0.25;
+            transform: translateX(-15px) scale(0.95);
+            /* Future steps are heavily blurred */
+            filter: blur(2px) grayscale(30%);
+            transition: all 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .el-step.active {
+            opacity: 1;
+            transform: translateX(0) scale(1.02);
+            /* Active step pops into sharp focus */
+            filter: blur(0px) grayscale(0%);
+            z-index: 10;
+        }
+
+        .el-step.completed {
+            opacity: 0.6;
+            transform: translateX(0) scale(0.98);
+            /* Past steps are slightly dimmed but still readable */
+            filter: blur(0.5px) grayscale(0%);
+        }
+
+        /* Floating Orb Icons */
+        .el-step-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffffff 0%, #f3f0f8 100%);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            box-shadow: 
+                0 8px 16px rgba(0,0,0,0.04),
+                inset 0 2px 4px rgba(255,255,255,1);
+            transition: all 0.5s ease;
+            color: var(--color-text-muted);
+        }
+
+        .el-step.active .el-step-icon {
+            border-color: transparent;
+            color: var(--color-accent);
+            background: #ffffff;
+            box-shadow:
+                0 0 0 4px #FFFFFF,
+                0 0 0 5px rgba(108, 92, 231, 0.2),
+                0 8px 16px rgba(108, 92, 231, 0.15);
+        }
+
+        /* Glass Content Cards */
+        .el-step-content {
+            background: rgba(255, 255, 255, 0.65);
+            padding: 1.4rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            flex: 1;
+            transition: all 0.5s ease;
+        }
+
+        .el-step.active .el-step-content {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+            box-shadow:
+                0 0 0 1px rgba(108, 92, 231, 0.05),
+                0 16px 32px -8px rgba(108, 92, 231, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 1);
+        }
+
+        .el-step-type {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #A391B3;
+            margin-bottom: 0.5rem;
+        }
+
+        .el-step.active .el-step-type {
+            color: var(--color-accent);
+        }
+
+        .el-step-text {
+            font-size: 0.88rem;
+            line-height: 1.6;
+            color: var(--color-text-main);
+        }
+
+        /* ── Right Side: AI Context Aggregator ── */
+        .el-context-panel {
+            flex: 1;
+            background-color: rgba(250, 248, 255, 0.6);
+            background-image: radial-gradient(rgba(108, 92, 231, 0.04) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4), inset 0 0 40px rgba(108, 92, 231, 0.02);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .el-context-header {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--color-text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.1);
+        }
+
+        .el-pulse-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: rgba(108, 92, 231, 0.04);
+            border: 1px solid rgba(108, 92, 231, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            padding: 0.35rem 0.8rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            color: var(--color-accent);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .el-pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); box-shadow: 0 0 10px var(--color-accent); }
+        }
+
+        .el-reasoning-box {
+            width: 100%;
+            min-height: 150px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(252, 251, 255, 0.85) 100%);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 2rem 2.5rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 1;
+            text-align: left;
+            border-top: none;
+            border: 1px solid rgba(108, 92, 231, 0.15);
+            box-shadow:
+                0 24px 48px -12px rgba(74, 59, 82, 0.1),
+                inset 0 2px 0 0 rgba(108, 92, 231, 0.4),
+                inset 0 3px 1px 0 rgba(255, 255, 255, 1);
+        }
+
+        .el-reasoning-box::before { display: none; }
+
+        /* Remove the old shimmer effect */
+        .el-reasoning-box::after { display: none; }
+
+        .el-reasoning-box.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .el-reasoning-title {
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .el-reasoning-title svg {
+            stroke: var(--color-accent);
+        }
+
+        .el-reasoning-text {
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: var(--color-text-main);
+            line-height: 1.6;
+            letter-spacing: -0.01em;
+            text-align: left;
+        }
+
+        @media (max-width: 900px) {
+            .el-card { flex-direction: column; gap: 2rem; padding: 1.5rem; }
+        }
+
+        /* ── Triage Inbox Widget ── */
+        .tr-wrapper {
+            max-width: 680px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .tr-glow {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            width: 500px;
+            height: 500px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(108, 92, 231, 0.05) 40%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(50px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .tr-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .tr-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.4) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 24px rgba(74, 59, 82, 0.04);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        .tr-card.active {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%);
+            transform: scale(1.02);
+            box-shadow: 
+                0 24px 48px rgba(108, 92, 231, 0.12),
+                0 0 0 2px rgba(108, 92, 231, 0.15);
+            z-index: 10;
+        }
+
+        .tr-card.dimmed {
+            opacity: 0.4;
+            transform: scale(0.98);
+        }
+
+        .tr-card:hover {
+            transform: translateY(-4px) scale(1.025);
+            opacity: 1;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.82) 100%);
+            box-shadow:
+                0 24px 56px rgba(108, 92, 231, 0.16),
+                0 0 0 2px rgba(108, 92, 231, 0.2);
+            z-index: 20;
+        }
+
+        .tr-card.dimmed:hover {
+            opacity: 1;
+            transform: translateY(-4px) scale(1.025);
+        }
+
+        .tr-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .tr-sender {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .tr-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
+            color: #4F46E5;
+            border: 2px solid #FFFFFF;
+            box-shadow:
+                0 2px 6px rgba(0,0,0,0.06),
+                inset 0 2px 4px rgba(255,255,255,0.5);
+        }
+
+        .tr-avatar.tr-avatar-amber {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            color: #D97706;
+        }
+
+        .tr-avatar.tr-avatar-pink {
+            background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%);
+            color: #DB2777;
+        }
+
+        .tr-client {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--color-text-main);
+        }
+
+        .tr-time {
+            font-size: 0.65rem;
+            color: #8E8499;
+            margin-top: 2px;
+        }
+
+        .tr-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--color-accent);
+            padding: 4px 10px;
+            border-radius: 100px;
+            border: 1px solid rgba(108, 92, 231, 0.2);
+        }
+
+        .tr-message {
+            font-size: 0.9rem;
+            color: var(--color-text-main);
+            line-height: 1.5;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        /* The expandable AI Box */
+        .tr-ai-box {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tr-card.active .tr-ai-box {
+            max-height: 350px; /* Expands smoothly */
+            opacity: 1;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(108, 92, 231, 0.15);
+        }
+
+        .tr-ai-header {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .tr-attachment {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 100px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        .tr-draft-text {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            font-style: italic;
+            border-left: 2px solid var(--color-accent);
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .tr-compare-box {
+            background: rgba(250, 248, 255, 0.6) !important;
+            padding: 0.6rem !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(108, 92, 231, 0.1) !important;
+            font-family: 'Inter', sans-serif !important;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .tr-diff-old {
+            background: rgba(239, 68, 68, 0.05);
+            color: #EF4444;
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            text-decoration: line-through;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .tr-diff-new {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1);
+        }
+
+        .tr-branch-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .tr-branch-btn {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tr-branch-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+            border-color: rgba(108, 92, 231, 0.3);
+        }
+
+        .tr-branch-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .tr-branch-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .tr-branch-text strong {
+            font-size: 0.85rem;
+            color: var(--color-text-main);
+        }
+
+        .tr-branch-text span {
+            font-size: 0.65rem;
+            color: var(--color-text-muted);
+        }
+
+        .tr-btn-primary {
+            background: linear-gradient(135deg, var(--color-accent), #A29BFE);
+            color: white;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(108, 92, 231, 0.2);
+        }
+
+        /* ── Priority Kanban Widget ── */
+        .pk-wrapper {
+            max-width: 580px;
+            margin: 0 auto 4rem;
+            padding: 0 1rem;
+            position: relative;
+            height: 700px;
+        }
+
+        .pk-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            width: 500px;
+            height: 500px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, rgba(129, 140, 248, 0.06) 40%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .pk-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.1rem;
+            height: 700px;
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .pk-inner.fade-out {
+            opacity: 0;
+            transform: translateY(12px) scale(0.98);
+        }
+
+        /* Date ticker */
+        .pk-date-ticker {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            border-radius: 100px;
+            padding: 7px 18px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: #B8A9C4;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .pk-date-ticker.highlight {
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #F59E0B;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.15);
+        }
+
+        .pk-date-extra {
+            font-size: 0.63rem;
+            font-style: italic;
+        }
+
+        /* Kanban columns container */
+        .pk-columns {
+            position: relative;
+            width: 100%;
+            height: 360px;
+        }
+
+        /* Column glass cards */
+        .pk-column {
+            position: absolute;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 1rem;
+            width: 260px;
+            height: 320px; /* Forces both columns to be exactly the same height */
+            display: flex;
+            flex-direction: column;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .pk-column.col-approval {
+            left: 0;
+            top: 0;
+            background: linear-gradient(135deg, rgba(255, 247, 235, 0.8), rgba(255, 247, 235, 0.4));
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            box-shadow: 0 12px 32px rgba(245, 158, 11, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+        }
+
+        .pk-column.col-awaiting {
+            right: 0;
+            top: 0;
+            background: linear-gradient(135deg, rgba(238, 240, 255, 0.8), rgba(238, 240, 255, 0.4));
+            border: 1px solid rgba(129, 140, 248, 0.3);
+            box-shadow: 0 12px 32px rgba(129, 140, 248, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
+        }
+
+        .pk-col-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.6rem;
+        }
+
+        .pk-col-header-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pk-col-icon {
+            font-size: 0.85rem;
+        }
+
+        .pk-col-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--color-text-main);
+        }
+
+        .pk-col-count {
+            font-size: 0.68rem;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 2px 8px;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .pk-col-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1; /* Allows the cards area to fill the column */
+        }
+
+        /* Customer card */
+        .pk-card {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 0.8rem;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        .pk-card.overdue {
+            background: rgba(254, 226, 226, 0.4);
+            border-color: rgba(252, 165, 165, 0.4);
+        }
+
+        .pk-card-name {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--color-text-main);
+            margin-bottom: 3px;
+        }
+
+        .pk-card-balance {
+            font-size: 0.72rem;
+            color: #8E8499;
+            margin-bottom: 0.5rem;
+        }
+
+        .pk-card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .pk-tag {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .pk-tag-red {
+            background: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FECACA;
+        }
+
+        .pk-tag-amber {
+            background: #FEF3C7;
+            color: #D97706;
+            border: 1px solid #FDE68A;
+        }
+
+        .pk-tag-grey {
+            background: rgba(0, 0, 0, 0.05);
+            color: #6B5C77;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .pk-followup {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7rem;
+            margin-top: 6px;
+            font-weight: 600;
+            color: #818CF8;
+            transition: color 0.3s ease;
+        }
+
+        .pk-followup.alerting {
+            color: #EF4444;
+            font-weight: 700;
+            animation: pk-pump 0.45s ease-in-out infinite;
+        }
+
+        .pk-followup.overdue {
+            color: #EF4444;
+            font-weight: 700;
+        }
+
+        @keyframes pk-pump {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.75; }
+        }
+
+        .pk-overdue-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            background: #FEE2E2;
+            color: #DC2626;
+            border: 1px solid #FECACA;
+            border-radius: 5px;
+            padding: 1px 6px;
+            margin-left: auto; /* Pushes to the right */
+        }
+
+        /* Flying card */
+        .pk-flying-card {
+            position: absolute;
+            right: 0;
+            top: 40px;
+            width: 260px;
+            z-index: 100;
+            pointer-events: none;
+            animation: pk-fly-across 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .pk-flying-inner {
+            background: rgba(255, 247, 235, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            border-left: 4px solid #EF4444;
+            border-radius: 12px;
+            padding: 0.8rem;
+            box-shadow: 0 20px 48px rgba(239, 68, 68, 0.15);
+        }
+
+        @keyframes pk-fly-across {
+            0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+            40%  { transform: translate(-120px, -30px) scale(1.05); opacity: 1; }
+            100% { transform: translate(-285px, 30px) scale(0.97); opacity: 0; }
+        }
+
+        /* Premium Draft Panel Upgrade */
+        .pk-draft-panel {
+            width: 100%;
+            max-width: 540px;
+            opacity: 0;
+            transform: translateY(12px);
+            visibility: hidden;
+            overflow: hidden;
+            transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .pk-draft-panel.visible {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        .pk-draft-inner {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.5) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 
+                0 20px 40px rgba(245, 158, 11, 0.1),
+                0 0 0 1px rgba(245, 158, 11, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 1);
+            position: relative;
+        }
+
+        /* The glowing amber line on the left */
+        .pk-draft-inner::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0; width: 4px;
+            background: linear-gradient(180deg, #FCD34D, #F59E0B);
+            border-radius: 24px 0 0 24px;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+        }
+
+        .pk-draft-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+            padding-bottom: 0.8rem;
+        }
+
+        .pk-draft-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #D97706;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pk-draft-meta {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #8E8499;
+            background: rgba(0,0,0,0.03);
+            padding: 4px 10px;
+            border-radius: 100px;
+        }
+
+        .pk-draft-text {
+            font-size: 0.88rem;
+            color: var(--color-text-main);
+            line-height: 1.6;
+            font-style: italic;
+            margin-bottom: 1.2rem;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 1.2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(245, 158, 11, 0.1);
+            min-height: 48px;
+        }
+
+        .el-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.1em;
+            background: var(--color-accent);
+            vertical-align: middle;
+            margin-left: 6px;
+            animation: ib-blink 0.8s step-end infinite;
+            border-radius: 2px;
+        }
+
+        .pk-draft-text .el-cursor {
+            background: #F59E0B;
+        }
+
+        .pk-draft-actions {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .pk-draft-btn {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+            cursor: default;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .pk-draft-btn-edit {
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            background: rgba(255, 255, 255, 0.8);
+            color: #D97706;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .pk-draft-btn-approve {
+            border: none;
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+            color: white;
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.25);
+        }
+
+        .pk-col-empty {
+            font-size: 0.75rem;
+            color: #C4B8CE;
+            text-align: center;
+            padding: 1rem 0;
+            font-style: italic;
+        }
+
+        /* =========================================
+           1. FIX THE GHOSTING TIMELINE
+           ========================================= */
+
+        /* Make the line 2px for perfect, sharp sub-pixel centering */
+        .el-thread-track {
+            padding-left: 20px !important;
+        }
+        .el-thread-line {
+            width: 2px !important;
+            left: 43px !important;
+            z-index: 1 !important; /* Push behind the icons */
+        }
+        .el-thread-progress {
+            width: 2px !important;
+        }
+
+        /* Remove global opacity so the line stops bleeding through */
+        .el-step {
+            opacity: 1 !important;
+            filter: none !important;
+        }
+
+        /* Force icons to remain 100% solid white to physically block the line */
+        .el-step-icon {
+            background: #FFFFFF !important;
+            position: relative;
+            z-index: 10 !important; /* Pull above the line */
+        }
+
+        /* Dim the inactive icons without making their backgrounds transparent */
+        .el-step:not(.active) .el-step-icon {
+            color: #B8A9C4 !important;
+            border: 1px solid rgba(0,0,0,0.06) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+        }
+
+        /* Fade the CONTENT cards instead of the parent wrapper */
+        .el-step:not(.active) .el-step-content {
+            opacity: 0.35;
+            filter: blur(1.5px) grayscale(30%);
+        }
+        .el-step.completed .el-step-content {
+            opacity: 0.65;
+            filter: blur(0.5px) grayscale(0%);
+        }
+
+
+        /* =========================================
+           2. FIX THE CLUNKY ACTIVE BORDERS
+           ========================================= */
+
+        .el-step.active .el-step-content {
+            background: #FFFFFF !important;
+            /* Kill the hacky -4px shadow, replace with a physical border and deep shadow */
+            border: 1px solid rgba(108, 92, 231, 0.15) !important;
+            border-left: 4px solid var(--color-accent) !important;
+            
+            box-shadow:
+                0 16px 32px -8px rgba(108, 92, 231, 0.15),
+                inset 0 1px 1px rgba(255, 255, 255, 1) !important;
+        }
+
+        /* Premium double-ring glow for the active icon */
+        .el-step.active .el-step-icon {
+            border-color: transparent !important;
+            box-shadow:
+                0 0 0 4px #FFFFFF,
+                0 0 0 5px rgba(108, 92, 231, 0.2),
+                0 8px 16px rgba(108, 92, 231, 0.15) !important;
+        }
+
+
+        /* =========================================
+           3. FIX THE AI BRAIN BOX & ALIGNMENT
+           ========================================= */
+
+        /* Soften the overwhelming dotted grid */
+        .el-context-panel {
+            background-image: radial-gradient(rgba(108, 92, 231, 0.04) 1.5px, transparent 1.5px) !important;
+        }
+
+        /* Redesign the synthesis box */
+        .el-reasoning-box {
+            text-align: left !important; /* Force left alignment */
+            background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(250,248,255,0.95) 100%) !important;
+            
+            border-top: none !important; /* Kill the thick top border */
+            border: 1px solid rgba(108, 92, 231, 0.15) !important;
+            
+            /* Elegant inner top rim glow instead of a solid flat border */
+            box-shadow:
+                0 24px 48px -12px rgba(74, 59, 82, 0.1),
+                inset 0 2px 0 0 rgba(108, 92, 231, 0.4),
+                inset 0 3px 1px 0 rgba(255, 255, 255, 1) !important;
+        }
+
+        /* Ensure the header flex content aligns left */
+        .el-reasoning-title {
+            justify-content: flex-start !important;
+        }
+
+        .el-reasoning-text {
+            text-align: left !important;
+            font-weight: 400 !important; /* Regular weight for a refined, editorial feel */
+            color: var(--color-text-main) !important;
+            letter-spacing: -0.01em;
+        }
+
+        /* =========================================
+           1. LAYOUT SHIFT (JITTER) FIXES
+           ========================================= */
+
+        /* Fix horizontal scrollbar battle */
+        body::after {
+            width: 100% !important;
+        }
+
+        /* Lock the heights so the typing animation never pushes the page down */
+        .ib-composer-body {
+            height: 150px !important;
+        }
+        .ib-synth-text {
+            height: 48px !important;
+        }
+        .el-reasoning-box {
+            height: 160px !important;
+        }
+        .pk-draft-text {
+            height: 75px !important;
+        }
+
+        /* Increase max height so the interactive draft has room to expand */
+        .tr-card.active .tr-ai-box {
+            max-height: 600px !important;
+        }
+
+        /* =========================================
+           2. TRIAGE INTERACTIVE STYLES
+           ========================================= */
+
+        .tr-branch-btn {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tr-branch-btn.selected {
+            border-color: var(--color-accent) !important;
+            background: rgba(108, 92, 231, 0.04);
+            box-shadow: 0 0 0 1px var(--color-accent), 0 4px 12px rgba(108, 92, 231, 0.1) !important;
+        }
+        .tr-branch-btn.is-drafting {
+            border-color: rgba(108, 92, 231, 0.35) !important;
+            background: rgba(108, 92, 231, 0.08) !important;
+            box-shadow: 0 0 0 1px rgba(108, 92, 231, 0.25), 0 8px 20px rgba(108, 92, 231, 0.16) !important;
+            animation: tr-drafting-pulse 1.2s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        }
+        .tr-branch-btn.dimmed {
+            opacity: 0.4;
+            transform: scale(0.98);
+            filter: grayscale(100%);
+            box-shadow: none !important;
+        }
+        @keyframes tr-drafting-pulse {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-1px) scale(1.01); }
+        }
+        .tr-dynamic-draft {
+            margin-top: 1.2rem;
+            padding-top: 1.2rem;
+            border-top: 1px dashed rgba(108, 92, 231, 0.2);
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .tr-dynamic-draft.visible {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* =========================================
+           WIDGET 2: SEMANTIC INLINE TOKENS
+           ========================================= */
+
+        /* Give the text a little more breathing room so the pills don't touch vertically */
+        .el-step-text {
+            line-height: 1.75 !important;
+        }
+
+        .el-token {
+            font-weight: 600;
+            padding: 0.15em 0.4em;
+            border-radius: 6px;
+
+            /* Crucial Agency Trick: keeps wrapped lines perfectly rounded */
+            -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+
+            font-size: 0.9em;
+            border: 1px solid transparent;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Dim the tags when the step is inactive to keep focus completely on the active card */
+        .el-step:not(.active) .el-token {
+            background: transparent !important;
+            border-color: rgba(0,0,0,0.1) !important;
+            color: var(--color-text-muted) !important;
+        }
+
+        /* Negative / Problem Intent */
+        .el-token.alert {
+            background: rgba(239, 68, 68, 0.08);
+            color: #DC2626;
+            border-color: rgba(239, 68, 68, 0.15);
+        }
+
+        /* Pending / Investigation Intent */
+        .el-token.warn {
+            background: rgba(245, 158, 11, 0.12);
+            color: #D97706;
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        /* Resolved / Money Intent */
+        .el-token.success {
+            background: rgba(16, 185, 129, 0.12);
+            color: #059669;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        /* Next Step / Action Intent */
+        .el-token.action {
+            background: rgba(108, 92, 231, 0.08);
+            color: var(--color-accent);
+            border-color: rgba(108, 92, 231, 0.15);
+        }
+
+        /* =========================================
+           WIDGET 2: TEXT BOX CLEANUP
+           ========================================= */
+        .el-step-content,
+        .el-step-type,
+        .el-step-text {
+            text-align: left !important;
+        }
+
+        .el-step-text {
+            font-size: 0.82rem !important;
+            line-height: 1.55 !important;
+        }
+
+        .el-reasoning-box {
+            height: auto !important;
+            min-height: 160px !important;
+            padding: 1.35rem 1.5rem !important;
+        }
+
+        .el-reasoning-text {
+            font-size: 0.82rem !important;
+            line-height: 1.5 !important;
+            max-width: 100% !important;
+            overflow-wrap: anywhere;
+        }
+
+        /* =========================================
+           GLOBAL TYPOGRAPHY UNIFICATION & DE-BUNCHING
+           ========================================= */
+
+        /* 1. Global Standardized Text Size for ALL reading text */
+        .ib-synth-text,
+        .ib-composer-body,
+        .el-step-text,
+        .el-reasoning-text,
+        .tr-message,
+        .tr-draft-text,
+        .pk-draft-text,
+        div[id^="tr-draft-target"] {
+            font-size: 0.95rem !important;
+            line-height: 1.6 !important;
+            font-weight: 400 !important;
+        }
+
+        /* Standardize all mini-labels */
+        .el-reasoning-title,
+        .ib-synth-title,
+        .ui-title,
+        .pk-col-label,
+        .pk-draft-label {
+            font-size: 0.75rem !important;
+            letter-spacing: 0.1em !important;
+            text-transform: uppercase !important;
+            font-weight: 800 !important;
+        }
+
+        /* 2. Widget 1 (Intelligence Brief) Enhancements */
+        .intel-brief-wrapper { min-height: 900px !important; }
+        .intel-brief {
+            min-height: 900px !important;
+            height: auto !important;
+            gap: 1.8rem !important;
+        }
+        .ib-metric-val { font-size: 1.15rem !important; }
+        .ib-metric-label { font-size: 0.68rem !important; }
+        .ib-metric-sub { font-size: 0.75rem !important; }
+        .ib-composer-body { height: 260px !important; }
+        .ib-synth-text { height: 65px !important; }
+        .ib-output-area { padding-bottom: 0 !important; }
+
+        /* 3. Widget 3 (Priority Kanban) Un-bunching & Scale Up */
+        .pk-wrapper {
+            max-width: 640px !important;
+            height: 760px !important;
+        }
+        .pk-inner { height: 760px !important; }
+        .pk-columns { height: 400px !important; }
+        .pk-column {
+            width: 290px !important;
+            height: 380px !important;
+            padding: 1.2rem !important;
+        }
+        .pk-flying-card { width: 290px !important; }
+        .pk-col-cards { gap: 0.85rem !important; }
+        .pk-card { padding: 1.1rem !important; }
+
+        /* Kanban Text scaling */
+        .pk-card-name { font-size: 0.95rem !important; margin-bottom: 5px !important; }
+        .pk-card-balance { font-size: 0.8rem !important; margin-bottom: 0.8rem !important; }
+        .pk-tag { font-size: 0.7rem !important; padding: 4px 8px !important; }
+        .pk-followup { font-size: 0.8rem !important; margin-top: 10px !important; }
+        .pk-date-ticker { font-size: 0.85rem !important; padding: 8px 20px !important; }
+        .pk-draft-text { height: 96px !important; }
+
+        /* Update Flying Animation to account for the wider gap */
+        @keyframes pk-fly-across {
+            0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+            40%  { transform: translate(-140px, -30px) scale(1.05); opacity: 1; }
+            100% { transform: translate(-330px, 30px) scale(0.97); opacity: 0; }
+        }
+
+        /* 4. Lock Widget 2 Height to prevent bounce and fix tiny text */
+        .el-reasoning-box {
+            height: 190px !important;
+            min-height: 190px !important;
+            padding: 1.5rem 2rem !important;
+        }
+
+        /* Editorial Polish for Headers */
+        .pk-col-label, .pk-draft-label {
+            letter-spacing: 0.12em !important;
+            font-weight: 800 !important;
+            text-transform: uppercase;
+        }
+
+        /* The Double-Ring Glow Card */
+        .pk-card {
+            background: rgba(255, 255, 255, 0.7) !important;
+            border: 1px solid rgba(255, 255, 255, 0.9) !important;
+            box-shadow:
+                0 4px 12px rgba(74, 59, 82, 0.03),
+                inset 0 1px 1px rgba(255, 255, 255, 1),
+                inset 0 -1px 1px rgba(255, 255, 255, 0.2) !important;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        /* Active/Overdue State with Deep Elevation */
+        .pk-card.overdue {
+            border-top: 3px solid #EF4444 !important;
+            transform: scale(1.02);
+            box-shadow:
+                0 20px 48px rgba(239, 68, 68, 0.12),
+                0 0 0 1px rgba(239, 68, 68, 0.1) !important;
+        }
+
+        /* Premium Draft Panel (The AI's Homework) */
+        .pk-draft-inner {
+            position: relative;
+            border: 1px solid rgba(245, 158, 11, 0.2) !important;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 248, 235, 0.7) 100%) !important;
+            box-shadow:
+                0 24px 48px -12px rgba(245, 158, 11, 0.15),
+                inset 0 2px 0 0 rgba(245, 158, 11, 0.4),
+                inset 0 3px 1px 0 rgba(255, 255, 255, 1) !important;
+        }
+
+        /* Enhanced Fly-Across Animation */
+        @keyframes pk-fly-across {
+            0%   { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+            30%  { transform: translate(-100px, -40px) rotate(-2deg) scale(1.08); opacity: 1; }
+            100% { transform: translate(-330px, 30px) rotate(0deg) scale(0.97); opacity: 0; }
+        }
+    </style>
+</head>
+<body vid="6">
+
+    
+    <div class="ambient-cloud cloud-1" vid="7"></div>
+    <div class="ambient-cloud cloud-2" vid="8"></div>
+    <div class="ambient-cloud cloud-3" vid="9"></div>
+
+    <nav vid="10">
+        <a class="logo" href="index.html" vid="11">
+            <div class="logo-mark" vid="12"></div>
+            Balancr
+        </a>
+        <div class="nav-links" vid="13">
+            <a href="features.html" vid="14">Features</a>
+            <a href="#" vid="15">Pricing</a>
+            <a href="#" vid="16">Manifesto</a>
+        </div>
+        <a href="#" class="cta-button" vid="17">Start Trial</a>
+    </nav>
+
+    <header vid="18">
+        <h1 vid="19">Recover revenue<br vid="20">with <i vid="21">gentle</i> intelligence.</h1>
+        <p class="hero-sub" vid="22">
+            The AI credit controller that understands nuance. Drafts perfect emails, predicts payment dates, and preserves client relationships.
+        </p>
+        <div class="hero-actions" style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 4rem;">
+            <a href="#" class="cta-button btn-large">Start 14-Day Free Trial</a>
+            <a href="#" class="cta-button btn-large btn-secondary">Book a Demo</a>
+        </div>
+        <div class="intel-brief-wrapper" id="intel-brief-root"></div>
+    </header>
+
+    <section class="feature-section">
+        <h2 class="section-heading">Protect relationships, not just invoices.</h2>
+        <p class="section-description">
+            The worst credit control mistake isn't chasing too late — it's chasing a customer who has a genuine grievance. Balancr recognises when something needs sorting before money is discussed, handles the handoff, and picks the chase back up once it's resolved.
+        </p>
+
+        <!-- ── The Escalation Loop Widget ── -->
+        <div class="el-wrapper" id="escalation-loop-root"></div>
+    </section>
+
+    <section class="feature-section">
+        <h2 class="section-heading">The squeaky wheel gets the oil.</h2>
+        <p class="section-description">
+            Problem customers don't pay because they're dishonest — they pay because someone keeps showing up. Balancr tracks every follow-up, flags when you're due, and drafts the next message before you've even thought to chase.
+        </p>
+
+        <!-- ── Priority Kanban Widget ── -->
+        <div class="pk-wrapper" id="priority-kanban-root"></div>
+    </section>
+
+    <section class="feature-section">
+        <h2 class="section-heading">Inbox triage on autopilot.</h2>
+        <p class="section-description">
+            Balancr doesn't just send emails—it handles the replies. It fetches missing PDFs from Xero, updates changed contact details, and tees up branching resolutions so you can clear your inbox in seconds.
+        </p>
+
+        <div class="tr-wrapper" id="triage-inbox-root">
+            <div class="tr-glow"></div>
+
+            <div class="tr-stack">
+                <div class="tr-card" id="tr-card-0">
+                    <div class="tr-header">
+                        <div class="tr-sender">
+                            <div class="tr-avatar">TB</div>
+                            <div>
+                                <div class="tr-client">Thornfield Brewery</div>
+                                <div class="tr-time">10 mins ago</div>
+                            </div>
+                        </div>
+                        <span class="tr-badge">Requires Action</span>
+                    </div>
+                    <div class="tr-message">"Hi, we seem to have lost the original. Could you send me a copy of invoice #1042?"</div>
+                    
+                    <div class="tr-ai-box">
+                        <div class="tr-ai-header">
+                            <span class="tr-ai-sparkle icon-inline" style="color: var(--color-accent);">
+                                <svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"></path></svg>
+                            </span> AI Action
+                        </div>
+                        <div class="tr-ai-content">
+                            <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.8rem;">
+                                Found and retrieved document from Xero integration.
+                            </div>
+                            <div class="tr-attachment">
+                                <span class="icon-inline" style="color: #EF4444; font-size: 1.1rem;">
+                                    <svg viewBox="0 0 24 24"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"></path><path d="M14 2v5h5"></path><path d="M9 13h6"></path><path d="M9 17h4"></path></svg>
+                                </span>
+                                <span style="font-weight: 600; font-size: 0.8rem; color: var(--color-text-main);">INV-1042.pdf</span>
+                            </div>
+                            <div class="tr-branch-grid" style="grid-template-columns: 1fr;">
+                                <div class="tr-branch-btn" id="btn-generate-0">
+                                    <div class="tr-branch-icon icon-inline" style="background: rgba(108, 92, 231, 0.1); color: var(--color-accent);">
+                                        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2l-7 20-4-9-9-4 20-7z"></path></svg>
+                                    </div>
+                                    <div class="tr-branch-text">
+                                        <strong>Invoice Fetched</strong>
+                                        <span>Generate draft email</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tr-dynamic-draft" id="tr-draft-container-0">
+                                <div class="tr-draft-text" id="tr-draft-target-0" style="min-height: 90px; line-height: 1.6; padding: 1rem; background: white; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); color: var(--color-text-main); font-style: normal; font-size: 0.85rem;"></div>
+                                <div class="btn-mini tr-btn-primary" style="opacity: 0; transition: 0.3s; width: auto; display: inline-block; padding: 0.6rem 1.4rem; margin-top: 0.5rem;" id="tr-draft-send-0">Approve & Send Draft</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tr-card" id="tr-card-1">
+                    <div class="tr-header">
+                        <div class="tr-sender">
+                            <div class="tr-avatar tr-avatar-amber">AC</div>
+                            <div>
+                                <div class="tr-client">Acorn Corp</div>
+                                <div class="tr-time">1 hour ago</div>
+                            </div>
+                        </div>
+                        <span class="tr-badge">CRM Update</span>
+                    </div>
+                    <div class="tr-message">"Just to let you know, our accounts email has changed to ap@acorncorp.com. Please use this going forward."</div>
+                    
+                    <div class="tr-ai-box">
+                        <div class="tr-ai-header">
+                            <span class="tr-ai-sparkle icon-inline" style="color: var(--color-accent);">
+                                <svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"></path></svg>
+                            </span> AI Action
+                        </div>
+                        <div class="tr-ai-content">
+                            <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.8rem;">
+                                Mismatch detected with current Xero contact record.
+                            </div>
+                            <div class="tr-compare-box">
+                                <div class="tr-diff-old">
+                                    <span class="icon-inline" style="opacity: 0.7;">
+                                        <svg viewBox="0 0 24 24"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+                                    </span>
+                                    accounts@acorncorp.com
+                                </div>
+                                <div class="tr-diff-new">
+                                    <span class="icon-inline">
+                                        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg>
+                                    </span>
+                                    ap@acorncorp.com
+                                </div>
+                            </div>
+                            <div class="tr-branch-grid" style="grid-template-columns: 1fr;">
+                                <div class="tr-branch-btn" id="btn-generate-1">
+                                    <div class="tr-branch-icon icon-inline" style="background: #D1FAE5; color: #059669;">
+                                        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg>
+                                    </div>
+                                    <div class="tr-branch-text">
+                                        <strong>User has changed email in Xero</strong>
+                                        <span>Generate draft email</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tr-dynamic-draft" id="tr-draft-container-1">
+                                <div class="tr-draft-text" id="tr-draft-target-1" style="min-height: 90px; line-height: 1.6; padding: 1rem; background: white; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); color: var(--color-text-main); font-style: normal; font-size: 0.85rem;"></div>
+                                <div class="btn-mini tr-btn-primary" style="opacity: 0; transition: 0.3s; width: auto; display: inline-block; padding: 0.6rem 1.4rem; margin-top: 0.5rem;" id="tr-draft-send-1">Approve & Send Draft</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tr-card" id="tr-card-2">
+                    <div class="tr-header">
+                        <div class="tr-sender">
+                            <div class="tr-avatar tr-avatar-pink">BS</div>
+                            <div>
+                                <div class="tr-client">Blake & Sons</div>
+                                <div class="tr-time">2 hours ago</div>
+                            </div>
+                        </div>
+                        <span class="tr-badge" style="background: #FEE2E2; color: #EF4444; border-color: #FECACA;">Automated Chase Paused</span>
+                    </div>
+                    <div class="tr-message">"Hi Sarah, we actually paid this last week. Can you check your accounts?"</div>
+                    
+                    <div class="tr-ai-box">
+                        <div class="tr-ai-header">
+                            <span class="tr-ai-sparkle icon-inline" style="color: var(--color-accent);">
+                                <svg viewBox="0 0 24 24"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"></path></svg>
+                            </span> AI Action
+                        </div>
+                        <div class="tr-ai-content">
+                            <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 0.8rem;">
+                                Automated follow-ups halted. Payment not yet reconciled in bank feed. How would you like to resolve this?
+                            </div>
+                            
+                            <div class="tr-branch-grid">
+                                <div class="tr-branch-btn" id="btn-payment-found">
+                                    <div class="tr-branch-icon icon-inline" style="background: #D1FAE5; color: #059669;">
+                                        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg>
+                                    </div>
+                                    <div class="tr-branch-text">
+                                        <strong>Payment Found</strong>
+                                        <span>Draft 'Thank You' email</span>
+                                    </div>
+                                </div>
+                                <div class="tr-branch-btn" id="btn-payment-not-found">
+                                    <div class="tr-branch-icon icon-inline" style="background: #FEE2E2; color: #DC2626;">
+                                        <svg viewBox="0 0 24 24"><path d="M18 6L6 18"></path><path d="M6 6l12 12"></path></svg>
+                                    </div>
+                                    <div class="tr-branch-text">
+                                        <strong>Not Found</strong>
+                                        <span>Request details</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tr-dynamic-draft" id="tr-draft-container-2">
+                                <div class="tr-draft-text" id="tr-draft-target-2" style="min-height: 90px; line-height: 1.6; padding: 1rem; background: white; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); color: var(--color-text-main); font-style: normal; font-size: 0.85rem;"></div>
+                                <div class="btn-mini tr-btn-primary" style="opacity: 0; transition: 0.3s; width: auto; display: inline-block; padding: 0.6rem 1.4rem; margin-top: 0.5rem;" id="tr-draft-send-2">Approve & Send Draft</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="feature-section" style="padding-bottom: 8rem; border-top: 1px solid rgba(108, 92, 231, 0.1);">
+        <div class="el-card" style="height: auto; flex-direction: column; text-align: center; max-width: 800px; margin: 0 auto; padding: 5rem 3rem;">
+            <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 3.5rem; font-weight: 700; color: var(--color-text-main); margin-bottom: 1.5rem; letter-spacing: -0.02em;">
+                Ready to restore <i style="color: var(--color-accent); font-weight: 500; font-style: italic;">balance?</i>
+            </h2>
+            <p style="font-size: 1.2rem; color: var(--color-text-muted); margin-bottom: 2.5rem; line-height: 1.6; text-wrap: balance;">
+                Stop sending robotic payment reminders. Let Balancr recover your revenue while actively protecting the client relationships you worked so hard to build.
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <a href="#" class="cta-button" style="font-size: 1.1rem; padding: 1rem 2.5rem; box-shadow: 0 8px 24px rgba(108, 92, 231, 0.3);">Start 14-Day Free Trial</a>
+                <a href="#" class="cta-button" style="font-size: 1.1rem; padding: 1rem 2.5rem; background: rgba(255,255,255,0.6); color: var(--color-text-main); border: 1px solid rgba(0,0,0,0.05); box-shadow: none;">Book a Demo</a>
+            </div>
+        </div>
+    </section>
+
+    <footer vid="123">
+        <p vid="124">© 2024 Balancr Inc.</p>
+        <div class="pantheon-mark" vid="125">Made by Pantheon Tools</div>
+    </footer>
+
+
+<script>
+// ─────────────────────────────────────────────
+//  WIDGET 1: Intelligence Brief (Agency Redesign)
+// ─────────────────────────────────────────────
+(function() {
+    var tones = ["Gentle reminder", "Friendly follow-up", "Firm follow-up", "Final notice", "Thank you"];
+    var currentScenario = 0;
+    var root = document.getElementById('intel-brief-root');
+
+    // High-end SVG icons to replace emojis
+    var svgInvoice = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
+    var svgCard = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>`;
+    var svgMail = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>`;
+    var svgSparkle = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path></svg>`;
+
+    var scenarios = [
+        {
+            client: "Thornfield Brewery",
+            invoiceNum: "#1042", invoiceAmount: "\u00A34,200", invoiceAge: "28 days ago",
+            lastPaymentAmount: "\u00A36,800", lastPaymentAge: "34 days ago",
+            emailsSent: 2, lastOpened: "6 days ago",
+            recommendation: "James usually pays within 30 days and responds well to a friendly tone. Suggest a warm nudge referencing the specific invoice to avoid escalating language.",
+            recommendedTone: 1,
+            emailTo: "james@thornfieldbrewery.co.uk", emailSubject: "Quick note on invoice #1042",
+            emailBody: "Hi James,\n\nHope all's well at the brewery \u2014 I know it's a busy time of year.\n\nJust a quick one: invoice #1042 for \u00A34,200 is sitting at 28 days now. I know these things sometimes just slip through the cracks, so I wanted to flag it before it gets lost in the pile.\n\nWarm regards,\nSarah"
+        },
+        {
+            client: "Acorn Corp",
+            invoiceNum: "#1187", invoiceAmount: "\u00A311,400", invoiceAge: "52 days ago",
+            lastPaymentAmount: "\u00A33,200", lastPaymentAge: "68 days ago",
+            emailsSent: 4, lastOpened: "14 days ago",
+            recommendation: "Acorn Corp has missed two payment windows and engagement is dropping. A firmer tone with a clear deadline and next-steps outlined is highly recommended.",
+            recommendedTone: 2,
+            emailTo: "accounts@acorncorp.com", emailSubject: "Invoice #1187 \u2014 payment now 52 days overdue",
+            emailBody: "Dear Acorn Corp Accounts Team,\n\nI'm writing regarding invoice #1187 for \u00A311,400, which was raised 52 days ago.\n\nTo keep things straightforward: we'd appreciate payment or confirmation of a payment date by Friday 28th February. Please let us know if there is an issue to resolve.\n\nBest regards,\nSarah"
+        },
+        {
+            client: "Blake & Sons",
+            invoiceNum: "#1203", invoiceAmount: "\u00A37,650", invoiceAge: "12 days ago",
+            lastPaymentAmount: "\u00A37,650", lastPaymentAge: "just now",
+            emailsSent: 1, lastOpened: "2 days ago",
+            recommendation: "Payment received in full \u2014 Blake & Sons paid ahead of schedule. Send a quick thank-you to reinforce the relationship and formally close the loop.",
+            recommendedTone: 4,
+            emailTo: "david@blakeandsons.co.uk", emailSubject: "Payment received \u2014 thank you!",
+            emailBody: "Hi David,\n\nJust a quick note to say thanks \u2014 we've received the \u00A37,650 for invoice #1203, and ahead of schedule too. Really appreciated.\n\nAlways a pleasure working with Blake & Sons. Looking forward to the next one when you are ready.\n\nBest regards,\nSarah"
+        }
+    ];
+
+    function buildWidget(s) {
+        var tonePills = tones.map((t, i) => `<span class="ib-tone-pill" id="ib-tone-${i}">${t}</span>`).join('');
+
+        return `
+        <div class="intel-brief premium-glass-card">
+            <div class="ib-header">
+                <span class="ib-title">Intelligence Brief</span>
+                <span class="ib-client">${s.client}</span>
+            </div>
+
+            <div class="ib-context-grid">
+                <div class="ib-metric" id="ib-metric-1">
+                    <div class="ib-metric-icon" style="background:rgba(245,158,11,0.1); color:#F59E0B;">${svgInvoice}</div>
+                    <div class="ib-metric-label">Invoice ${s.invoiceNum}</div>
+                    <div class="ib-metric-val">${s.invoiceAmount}</div>
+                    <div class="ib-metric-sub">${s.invoiceAge}</div>
+                </div>
+                <div class="ib-metric" id="ib-metric-2">
+                    <div class="ib-metric-icon" style="background:rgba(16,185,129,0.1); color:#10B981;">${svgCard}</div>
+                    <div class="ib-metric-label">Last Payment</div>
+                    <div class="ib-metric-val">${s.lastPaymentAmount}</div>
+                    <div class="ib-metric-sub">${s.lastPaymentAge}</div>
+                </div>
+                <div class="ib-metric" id="ib-metric-3">
+                    <div class="ib-metric-icon" style="background:rgba(59,130,246,0.1); color:#3B82F6;">${svgMail}</div>
+                    <div class="ib-metric-label">Comm History</div>
+                    <div class="ib-metric-val">${s.emailsSent} sent</div>
+                    <div class="ib-metric-sub">Opened ${s.lastOpened}</div>
+                </div>
+            </div>
+
+            <div class="ib-ai-container">
+                <div class="ib-ai-loader" id="ib-ai-loader">
+                    <div class="ib-ai-spinner"></div>
+                    <span>Analysing customer context...</span>
+                </div>
+                    <div class="ib-synthesis-box" id="ib-synthesis">
+                        <div class="ib-synth-title">${svgSparkle} Agent Reasoning</div>
+                        <div class="ib-synth-text" id="ib-synth-text"></div>
+                    </div>
+            </div>
+
+            <div class="ib-output-area" id="ib-output">
+                <div class="ib-tone-row">
+                    <span class="ib-tone-title">Tone:</span>
+                    ${tonePills}
+                </div>
+                <div class="ib-composer">
+                    <div class="ib-composer-header">
+                        <div><span>To:</span> <strong>${s.emailTo}</strong></div>
+                        <div><span>Subj:</span> <strong>${s.emailSubject}</strong></div>
+                    </div>
+                    <div class="ib-composer-body" id="ib-email-body"><span class="ib-cursor" id="ib-cursor"></span></div>
+                    <div class="ib-actions" id="ib-actions">
+                        <div class="ib-approve-btn">Approve & Send Draft</div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    // New hyper-speed typing function (Drops 3 characters at a time)
+    function fastType(el, text, speed, cursorEl, cb) {
+        let i = 0;
+        function tick() {
+            let chunk = text.substr(i, 3);
+            if (chunk.length > 0) {
+                if (cursorEl) {
+                    let lines = chunk.split('\n');
+                    lines.forEach((line, index) => {
+                        if (index > 0) el.insertBefore(document.createElement('br'), cursorEl);
+                        if (line) el.insertBefore(document.createTextNode(line), cursorEl);
+                    });
+                } else {
+                    el.appendChild(document.createTextNode(chunk));
+                }
+                i += 3;
+                setTimeout(tick, speed);
+            } else {
+                if (cb) cb();
+            }
+        }
+        tick();
+    }
+
+    function runSequence() {
+        var s = scenarios[currentScenario];
+        root.innerHTML = buildWidget(s);
+        root.style.opacity = '1';
+
+        // CHOREOGRAPHY
+        setTimeout(() => document.getElementById('ib-metric-1').classList.add('visible'), 50);
+        setTimeout(() => document.getElementById('ib-metric-2').classList.add('visible'), 150);
+        setTimeout(() => document.getElementById('ib-metric-3').classList.add('visible'), 250);
+
+        setTimeout(() => {
+            document.querySelectorAll('.ib-metric').forEach(m => m.classList.add('ingested'));
+            let loader = document.getElementById('ib-ai-loader');
+            loader.style.display = 'flex';
+            setTimeout(() => loader.classList.add('visible'), 10);
+        }, 800);
+
+        setTimeout(() => {
+            let loader = document.getElementById('ib-ai-loader');
+            loader.classList.replace('visible', 'hidden');
+
+            setTimeout(() => {
+                loader.style.display = 'none';
+                let synth = document.getElementById('ib-synthesis');
+                synth.classList.add('visible');
+
+                fastType(document.getElementById('ib-synth-text'), s.recommendation, 12, null, () => {
+                    setTimeout(() => {
+                        document.getElementById('ib-output').classList.add('visible');
+                        let toneNodes = document.querySelectorAll('.ib-tone-pill');
+                        toneNodes.forEach((t, i) => setTimeout(() => t.classList.add('visible'), i * 60));
+
+                        setTimeout(() => {
+                            document.getElementById('ib-tone-' + s.recommendedTone).classList.add('selected');
+
+                            setTimeout(() => {
+                                let cursor = document.getElementById('ib-cursor');
+                                fastType(document.getElementById('ib-email-body'), s.emailBody, 10, cursor, () => {
+                                    cursor.style.display = 'none';
+                                    document.getElementById('ib-actions').classList.add('visible');
+                                });
+                            }, 300);
+
+                        }, 400);
+
+                    }, 400);
+
+                });
+            }, 300); // Wait for loader fade out
+        }, 1800); // Only a 1 second analysis delay!
+
+        setTimeout(() => {
+            root.style.transition = 'opacity 0.6s ease';
+            root.style.opacity = '0';
+        }, 12000);
+
+        setTimeout(() => {
+            currentScenario = (currentScenario + 1) % scenarios.length;
+            root.style.transition = 'none';
+            runSequence();
+        }, 12600);
+    }
+
+    // Kick off the engine
+    setTimeout(runSequence, 500);
+})();
+
+// ─────────────────────────────────────────────
+//  Escalation Loop Widget (Aesthetic Update)
+// ─────────────────────────────────────────────
+(function() {
+    var elRoot = document.getElementById('escalation-loop-root');
+    if (!elRoot) return;
+    var steps = [
+        {
+            type: "Inbound Customer Reply",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`,
+            text: "\"Hi Sarah, we actually <span class='el-token alert'>returned two damaged pallets</span> from INV #1042 to the warehouse on Tuesday. Can you look into this before we pay?\"",
+            source: "External Email",
+            ingestText: "Extracted intent: [Partial Return / Damaged Goods]",
+            reasoning: "Active dispute detected. Pausing automated collections sequence to prevent relationship damage."
+        },
+        {
+            type: "AI Triage & Routing",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>`,
+            text: "<strong>Account Manager:</strong> 'Thornfield Brewery <span class='el-token warn'>claims a partial return</span> for INV #1042. Can someone verify and raise a credit note if valid?'",
+            source: "Internal Workflow",
+            ingestText: "Ticket #892 created. Status: Blocked awaiting Sales.",
+            reasoning: "Dispute acknowledged and internal investigation launched. Waiting for result."
+        },
+        {
+            type: "Human Resolution",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
+            text: "<strong>Return verified.</strong> I've just <span class='el-token success'>applied an £800 credit note</span> (CN-092) to Thornfield's account in Xero.",
+            source: "CRM / Ledger Note",
+            ingestText: "Webhook received: Xero Credit Note CN-092 applied.",
+            reasoning: "Conflict resolved. Original balance £4,200 reduced by £800. New outstanding balance: £3,400."
+        },
+        {
+            type: "AI Resumes Collections",
+            icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg>`,
+            text: "<strong>Drafted reply:</strong> 'Hi James, thanks for your patience! We've <span class='el-token success'>applied the £800 credit</span> for those pallets. Could you let me know when the <span class='el-token action'>remaining £3,400</span> is scheduled for payment?'",
+            source: "System Output",
+            ingestText: "Context updated. Tone: Empathetic & Collaborative.",
+            reasoning: "Context synthesized. Drafting tailored follow-up. Awaiting user approval to send."
+        }
+    ];
+
+    function buildUI() {
+        let html = '<div class="el-card">';
+
+        // ── Left Side: The Thread ──
+        html += '<div class="el-thread">';
+        html += '<div class="el-thread-track" id="el-thread-track">';
+        html += '<div class="el-thread-line"><div class="el-thread-progress" id="el-progress"></div></div>';
+
+        steps.forEach((step, index) => {
+            html += `
+                <div class="el-step" id="el-step-${index}">
+                    <div class="el-step-icon">${step.icon}</div>
+                    <div class="el-step-content">
+                        <div class="el-step-type">${step.type}</div>
+                        <div class="el-step-text">${step.text}</div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div></div>';
+
+        // ── Right Side: Pure AI Reasoning (The "Brain") ──
+        html += `
+            <div class="el-context-panel">
+                <div class="el-context-header">
+                    <div>AI Copilot Brain</div>
+                    <div class="el-pulse-wrap">
+                        <div class="el-pulse-dot"></div>
+                        <span style="font-weight: 700;">PROCESSING</span>
+                    </div>
+                </div>
+
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <div class="el-reasoning-box visible" id="el-reasoning-box">
+                        <div class="el-reasoning-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3a3 3 0 0 0-3 3v1a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2v1a3 3 0 0 0 3 3h1"/><path d="M16 3a3 3 0 0 1 3 3v1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2v1a3 3 0 0 1-3 3h-1"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M12 6v12"/></svg>
+                            Agent Reasoning
+                        </div>
+                        <div class="el-reasoning-text" id="el-reasoning-text">Listening for workflow triggers...</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        html += '</div>';
+        return html;
+    }
+
+    elRoot.innerHTML = buildUI();
+
+    var currentStep = 0;
+    var reasoningBox = document.getElementById('el-reasoning-box');
+    var reasoningText = document.getElementById('el-reasoning-text');
+
+    function animateLoop() {
+        let track = document.getElementById('el-thread-track');
+        let progress = document.getElementById('el-progress');
+
+        // Reset if loop finished
+        if (currentStep >= steps.length) {
+            setTimeout(() => {
+                currentStep = 0;
+                progress.style.height = '0px';
+                track.style.transform = 'translateY(0px)';
+
+                steps.forEach((_, i) => {
+                    let s = document.getElementById(`el-step-${i}`);
+                    s.classList.remove('active', 'completed');
+                });
+
+                // Fade out box and reset text
+                reasoningBox.classList.remove('visible');
+                setTimeout(() => {
+                    reasoningText.innerHTML = 'Listening for workflow triggers...';
+                    reasoningBox.classList.add('visible');
+                }, 600);
+
+                setTimeout(animateLoop, 2000);
+            }, 6000);
+            return;
+        }
+
+        let stepData = steps[currentStep];
+        let stepEl = document.getElementById(`el-step-${currentStep}`);
+
+        // 1. Mark previous step as "completed" (dimmed but not fully blurred)
+        if (currentStep > 0) {
+            let prevEl = document.getElementById(`el-step-${currentStep - 1}`);
+            prevEl.classList.remove('active');
+            prevEl.classList.add('completed');
+        }
+
+        // 2. Activate current step
+        stepEl.classList.add('active');
+
+        // 3. Scroll the track upwards — gently, so 2 cards are always visible.
+        // Instead of scrolling the active step to the very top (which hides the previous one),
+        // we scroll so the PREVIOUS step sits just inside the visible area's top edge.
+        // This keeps the active card + its predecessor both fully readable.
+        let targetScrollPos = 0;
+        if (currentStep > 1) {
+            let prevStepEl = document.getElementById(`el-step-${currentStep - 1}`);
+            // Scroll so the previous step's top sits ~120px from track top (just below the mask fade)
+            targetScrollPos = prevStepEl.offsetTop - 120;
+            if (targetScrollPos < 0) targetScrollPos = 0;
+        }
+        track.style.transform = `translateY(-${targetScrollPos}px)`;
+
+        // 4. Update the Progress Line to reach the center of the current icon
+        // 100 is the top padding. We calculate pixels to perfectly hit the 24px center of the orb.
+        progress.style.height = (stepEl.offsetTop - 100 + 24) + 'px';
+
+        // 5. Update the AI Brain
+        reasoningBox.classList.remove('visible');
+
+        setTimeout(() => {
+            reasoningBox.classList.add('visible');
+            reasoningText.innerHTML = '';
+
+            let i = 0;
+            let text = stepData.reasoning;
+
+            let cursor = document.createElement('span');
+            cursor.className = 'el-cursor';
+            cursor.style.background = 'var(--color-accent)';
+            reasoningText.appendChild(cursor);
+
+            function typeChar() {
+                if (i < text.length) {
+                    reasoningText.insertBefore(document.createTextNode(text.charAt(i)), cursor);
+                    i++;
+                    setTimeout(typeChar, 25);
+                } else {
+                    setTimeout(() => cursor.style.display = 'none', 500);
+                }
+            }
+            typeChar();
+
+        }, 400);
+
+        currentStep++;
+        
+        // Wait 4.5 seconds before moving to the next step
+        setTimeout(animateLoop, 4500); 
+    }
+
+    window.startEscalationLoop = function() {
+        setTimeout(animateLoop, 500);
+    };
+})();
+
+// ─────────────────────────────────────────────
+//  Triage Inbox Widget (Stacked Panels)
+// ─────────────────────────────────────────────
+(function() {
+    var triageRoot = document.getElementById('triage-inbox-root');
+    if (!triageRoot) return;
+
+    var cards = [
+        document.getElementById('tr-card-0'),
+        document.getElementById('tr-card-1'),
+        document.getElementById('tr-card-2')
+    ];
+
+    function setActiveCard(activeIdx) {
+        cards.forEach((card, index) => {
+            card.classList.remove('active', 'dimmed');
+            if (!card) return;
+            if (index === activeIdx) {
+                card.classList.add('active');
+            } else if (activeIdx !== 2) {
+                // Keep dimming behavior for cards 1 and 2, but not for the
+                // interactive Blake & Sons card so it feels fully manual.
+                card.classList.add('dimmed');
+            }
+        });
+    }
+
+    cards.forEach((card, index) => {
+        if (!card) return;
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', function() {
+            setActiveCard(index);
+        });
+    });
+})();
+
+// ─────────────────────────────────────────────
+//  Priority Kanban Widget (vanilla JS)
+// ─────────────────────────────────────────────
+(function() {
+    var pkRoot = document.getElementById('priority-kanban-root');
+
+    var ICONS = {
+        calendar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>',
+        checkCircle: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l2.5 2.5L16 9"></path></svg>',
+        send: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2l-7 20-4-9-9-4 20-7z"></path></svg>',
+        alertDot: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><circle cx="12" cy="16" r="1"></circle></svg>',
+        spark: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"></path></svg>'
+    };
+
+    var DATES = ['Mon 23 Feb', 'Tue 24 Feb', 'Wed 25 Feb', 'Wed 25 Feb'];
+    var FULL_DATES = ['Mon, 23 Feb 2026', 'Tue, 24 Feb 2026', 'Wed, 25 Feb 2026', 'Wed, 25 Feb 2026'];
+    var DRAFT_TEXT = "Hi James, I wanted to follow up on the outstanding balance of \u00A311,500. We\u2019ve been in touch a few times now \u2014 please do let me know if there\u2019s anything we can help with.";
+
+    function makeTag(label, cls) {
+        var displayLabel = label.replace(/_/g, ' ');
+        return '<span class="pk-tag ' + cls + '">' + displayLabel + '</span>';
+    }
+
+    function makeCard(name, balance, tags, followUp, followUpCls, borderColor, overdueBadge) {
+        var cardCls = followUpCls === 'overdue' ? 'pk-card overdue' : 'pk-card';
+        var borderStyle = followUpCls === 'overdue'
+            ? 'border-top: 3px solid #EF4444; box-shadow: 0 8px 24px rgba(239, 68, 68, 0.12);'
+            : 'border-top: 3px solid ' + borderColor + ';';
+        var html = '<div class="' + cardCls + '" style="' + borderStyle + '">';
+        html += '<div class="pk-card-name">' + name + '</div>';
+        html += '<div class="pk-card-balance">Total balance: ' + balance + '</div>';
+        html += '<div class="pk-card-tags">' + tags + '</div>';
+        if (followUp) {
+            var fCls = 'pk-followup';
+            if (followUpCls) fCls += ' ' + followUpCls;
+            var icon = (followUpCls === 'alerting' || followUpCls === 'overdue')
+                ? '<span class="icon-inline" style="color:#EF4444;">' + ICONS.alertDot + '</span>'
+                : '<span class="icon-inline" style="color:#818CF8;">' + ICONS.calendar + '</span>';
+            html += '<div class="' + fCls + '" id="pk-acorn-followup">';
+            html += '<span>' + icon + '</span><span>Follow-up: ' + followUp + '</span>';
+            if (overdueBadge) html += '<span class="pk-overdue-badge">overdue</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function buildKanban(dateIdx, followUpState, cardMoved, showFly) {
+        var dateStr = FULL_DATES[Math.min(dateIdx, 3)];
+        var followUpDate = DATES[Math.min(dateIdx, 3)];
+
+        // Approval column cards
+        var approvalCards = makeCard('Thornfield Brewery', '\u00A34,200',
+            makeTag('30 days overdue', 'pk-tag-grey') + makeTag('Draft Ready', 'pk-tag-amber'),
+            null, '', '#F59E0B', false);
+        var approvalCount = 1;
+
+        if (cardMoved) {
+            // REMOVED '30 days overdue' tag here
+            approvalCards += makeCard('Acorn Corp', '\u00A311,500',
+                makeTag('90+ days', 'pk-tag-red') + makeTag('credit risk', 'pk-tag-grey') + makeTag('Draft Ready', 'pk-tag-amber'),
+                followUpDate, 'overdue', '#F59E0B', true);
+            approvalCount = 2;
+        }
+
+        // Awaiting reply cards
+        var awaitingCards = '';
+        var awaitingCount = 0;
+        if (!showFly && !cardMoved) {
+            // REMOVED '30 days overdue' tag here
+            awaitingCards += makeCard('Acorn Corp', '\u00A311,500',
+                makeTag('90+ days', 'pk-tag-red') + makeTag('credit risk', 'pk-tag-grey') + makeTag('Idle', 'pk-tag-grey'),
+                followUpDate, followUpState, '#818CF8', false);
+            awaitingCards += makeCard('Blake & Sons', '\u00A32,800',
+                makeTag('60 days overdue', 'pk-tag-amber') + makeTag('Idle', 'pk-tag-grey'),
+                'Fri 27 Feb', '', '#818CF8', false);
+            awaitingCount = 2;
+        } else {
+            awaitingCards += makeCard('Blake & Sons', '\u00A32,800',
+                makeTag('60 days overdue', 'pk-tag-amber') + makeTag('Idle', 'pk-tag-grey'),
+                'Fri 27 Feb', '', '#818CF8', false);
+            awaitingCount = 1;
+        }
+
+        // Date ticker extras
+        var dateExtra = '';
+        if (dateIdx > 0 && dateIdx < 3 && !cardMoved) {
+            dateExtra = '<span class="pk-date-extra" style="color:#F59E0B">time passing\u2026</span>';
+        }
+        if (dateIdx >= 3 || followUpState === 'alerting' || followUpState === 'overdue') {
+            dateExtra = '<span class="pk-date-extra" style="color:#F87171;font-weight:700;font-style:normal">follow-up due today</span>';
+        }
+
+        var html = '<div class="pk-inner" id="pk-inner">';
+
+        // Date ticker
+        html += '<div class="pk-date-ticker" id="pk-date-ticker">';
+        html += '<span class="icon-inline" style="color:#8E8499;">' + ICONS.calendar + '</span><span id="pk-date-text">' + dateStr + '</span>';
+        html += '<span id="pk-date-extra">' + dateExtra + '</span>';
+        html += '</div>';
+
+        // Columns
+        html += '<div class="pk-columns">';
+
+        // Needs Approval — left
+        html += '<div class="pk-column col-approval">';
+        html += '<div class="pk-col-header" style="border-bottom:1px solid rgba(245,158,11,0.2)">';
+        html += '<div class="pk-col-header-left"><span class="pk-col-icon icon-inline" style="color:#F59E0B;">' + ICONS.checkCircle + '</span><span class="pk-col-label">Needs Approval</span></div>';
+        html += '<div class="pk-col-count" style="border:1px solid rgba(245,158,11,0.2);color:#F59E0B">' + approvalCount + '</div>';
+        html += '</div>';
+        html += '<div class="pk-col-cards">' + approvalCards + '</div>';
+        html += '</div>';
+
+        // Awaiting Reply — right
+        html += '<div class="pk-column col-awaiting">';
+        html += '<div class="pk-col-header" style="border-bottom:1px solid rgba(129,140,248,0.2)">';
+        html += '<div class="pk-col-header-left"><span class="pk-col-icon icon-inline" style="color:#818CF8;">' + ICONS.send + '</span><span class="pk-col-label">Awaiting Reply</span></div>';
+        html += '<div class="pk-col-count" style="border:1px solid rgba(129,140,248,0.2);color:#818CF8">' + awaitingCount + '</div>';
+        html += '</div>';
+        html += '<div class="pk-col-cards">' + awaitingCards + '</div>';
+        html += '</div>';
+
+        // Flying card
+        if (showFly) {
+            html += '<div class="pk-flying-card"><div class="pk-flying-inner">';
+            html += '<div class="pk-card-name">Acorn Corp</div>';
+            html += '<div class="pk-card-balance">Total balance: \u00A311,500</div>';
+            // REMOVED '30 days overdue' tag here
+            html += '<div class="pk-card-tags">' + makeTag('90+ days', 'pk-tag-red') + makeTag('credit risk', 'pk-tag-grey') + makeTag('Idle', 'pk-tag-grey') + '</div>';
+            html += '<div class="pk-followup overdue"><span class="icon-inline" style="color:#EF4444;">' + ICONS.alertDot + '</span><span>Follow-up: ' + followUpDate + '</span><span class="pk-overdue-badge">overdue</span></div>';
+            html += '</div></div>';
+        }
+
+        html += '</div>'; // columns
+
+        // Upgraded Draft panel HTML
+        html += '<div class="pk-draft-panel" id="pk-draft-panel">';
+        html += '<div class="pk-draft-inner">';
+        html += '<div class="pk-draft-header">';
+        html += '<div class="pk-draft-label"><span class="icon-inline" style="font-size:1rem;color:#D97706;">' + ICONS.spark + '</span> Follow-up draft ready</div>';
+        html += '<div class="pk-draft-meta">Acorn Corp \u2022 90+ days overdue</div>';
+        html += '</div>';
+        html += '<div class="pk-draft-text" id="pk-draft-text"></div>';
+        html += '<div class="pk-draft-actions">';
+        html += '<div class="pk-draft-btn pk-draft-btn-edit">Edit draft</div>';
+        html += '<div class="pk-draft-btn pk-draft-btn-approve">Approve & Send \u2192</div>';
+        html += '</div></div></div>';
+
+        html += '</div>'; // inner
+        return html;
+    }
+
+    function pkTypeWriter(element, text, speed, callback) {
+        var i = 0;
+        var cursorSpan = document.createElement('span');
+        cursorSpan.className = 'el-cursor';
+        cursorSpan.style.background = '#F59E0B';
+        element.appendChild(cursorSpan);
+
+        function tick() {
+            if (i < text.length) {
+                element.insertBefore(document.createTextNode(text.charAt(i)), cursorSpan);
+                i++;
+                setTimeout(tick, speed);
+            } else {
+                cursorSpan.style.display = 'none';
+                if (callback) callback();
+            }
+        }
+        tick();
+    }
+
+    function runKanban() {
+        // Stage 0: Initial state — both cards in Awaiting Reply
+        pkRoot.innerHTML = buildKanban(0, '', false, false);
+
+        var timers = [];
+
+        // Stage 1: Tick dates forward (1.8s start, each tick ~700ms)
+        timers.push(setTimeout(function() {
+            var ticker = document.getElementById('pk-date-ticker');
+            var dateText = document.getElementById('pk-date-text');
+            var dateExtra = document.getElementById('pk-date-extra');
+
+            // Tick 1
+            if (ticker) ticker.classList.add('highlight');
+            if (dateText) dateText.textContent = FULL_DATES[1];
+            if (dateExtra) dateExtra.innerHTML = '<span class="pk-date-extra" style="color:#F59E0B">time passing\u2026</span>';
+            timers.push(setTimeout(function() { if (ticker) ticker.classList.remove('highlight'); }, 350));
+
+            // Tick 2
+            timers.push(setTimeout(function() {
+                if (ticker) ticker.classList.add('highlight');
+                if (dateText) dateText.textContent = FULL_DATES[2];
+                timers.push(setTimeout(function() { if (ticker) ticker.classList.remove('highlight'); }, 350));
+            }, 700));
+
+            // Tick 3
+            timers.push(setTimeout(function() {
+                if (ticker) ticker.classList.add('highlight');
+                if (dateText) dateText.textContent = FULL_DATES[3];
+                if (dateExtra) dateExtra.innerHTML = '<span class="pk-date-extra" style="color:#F87171;font-weight:700;font-style:normal">follow-up due today</span>';
+                timers.push(setTimeout(function() { if (ticker) ticker.classList.remove('highlight'); }, 350));
+            }, 1400));
+        }, 2000));
+
+        // Stage 2: Follow-up text pumps red (4.4s)
+        timers.push(setTimeout(function() {
+            var fu = document.getElementById('pk-acorn-followup');
+            if (fu) {
+                fu.className = 'pk-followup alerting';
+                fu.innerHTML = '<span class="icon-inline" style="color:#EF4444;">' + ICONS.alertDot + '</span><span>Follow-up: Wed 25 Feb</span>';
+            }
+        }, 4600));
+
+        // Stage 2.5: Anticipation shiver/lift (5.8s)
+        timers.push(setTimeout(function() {
+            var awaitingAcornCard = pkRoot.querySelector('.col-awaiting .pk-card');
+            if (awaitingAcornCard) {
+                awaitingAcornCard.style.transition = 'transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1)';
+                awaitingAcornCard.style.transform = 'translateY(-4px) scale(1.03)';
+                awaitingAcornCard.style.boxShadow = '0 18px 36px rgba(108, 92, 231, 0.12)';
+                timers.push(setTimeout(function() {
+                    awaitingAcornCard.style.transform = '';
+                    awaitingAcornCard.style.boxShadow = '';
+                }, 240));
+            }
+        }, 5800));
+
+        // Stage 3: Card flies across (6.2s)
+        timers.push(setTimeout(function() {
+            pkRoot.innerHTML = buildKanban(3, 'overdue', false, true);
+        }, 6200));
+
+        // Stage 4: Card lands in Approval column (7.2s)
+        timers.push(setTimeout(function() {
+            pkRoot.innerHTML = buildKanban(3, 'overdue', true, false);
+        }, 7200));
+
+        // Stage 5: Draft panel appears (7.8s)
+        timers.push(setTimeout(function() {
+            var draftPanel = document.getElementById('pk-draft-panel');
+            var draftText = document.getElementById('pk-draft-text');
+            if (draftPanel) draftPanel.classList.add('visible');
+            if (draftText) {
+                pkTypeWriter(draftText, '\u201C' + DRAFT_TEXT + '\u201D', 18);
+            }
+        }, 7800));
+
+        // Stage 6: Hold then fade and restart.
+        timers.push(setTimeout(function() {
+            var inner = document.getElementById('pk-inner');
+            if (inner) inner.classList.add('fade-out');
+
+            timers.push(setTimeout(function() {
+                runKanban();
+            }, 900));
+        }, 15000));
+    }
+
+    window.startPriorityKanban = runKanban;
+})();
+
+// ─────────────────────────────────────────────
+// INTERSECTION OBSERVERS (Start on Scroll)
+// ─────────────────────────────────────────────
+function startOnScroll(elementId, callback) {
+    var el = document.getElementById(elementId);
+    if (!el) return;
+    var hasStarted = false;
+    var observer = new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting && !hasStarted) {
+            hasStarted = true;
+            callback();
+        }
+    }, { threshold: 0.25 });
+    observer.observe(el);
+}
+
+// 1. Escalation Loop start
+startOnScroll('escalation-loop-root', function() {
+    if (typeof window.startEscalationLoop === 'function') {
+        window.startEscalationLoop();
+    }
+});
+
+// 2. Priority Kanban start
+startOnScroll('priority-kanban-root', function() {
+    if (typeof window.startPriorityKanban === 'function') {
+        window.startPriorityKanban();
+    }
+});
+
+// ─────────────────────────────────────────────
+// TRIAGE INTERACTIVE LOGIC (Universal Engine)
+// ─────────────────────────────────────────────
+(function() {
+    let isTyping = false;
+    let typingTimeouts = [];
+
+    // Master Typing Engine
+    function typeDynamicEmail(text, containerId, targetId, sendBtnId, clickedBtn) {
+        if (isTyping) return;
+
+        const container = document.getElementById(containerId);
+        const target = document.getElementById(targetId);
+        const sendBtn = document.getElementById(sendBtnId);
+
+        if (!container || !target || !sendBtn) return;
+        isTyping = true;
+
+        // Premium UI Feedback: Change button state to "Drafting..."
+        if (clickedBtn && clickedBtn.id !== 'btn-payment-found' && clickedBtn.id !== 'btn-payment-not-found') {
+            clickedBtn.style.pointerEvents = 'none';
+            clickedBtn.classList.add('selected');
+            clickedBtn.classList.add('is-drafting');
+            const strongTag = clickedBtn.querySelector('strong');
+            const spanTag = clickedBtn.querySelector('span:not(.icon-inline)');
+            if (strongTag) strongTag.innerText = 'Drafting Response...';
+            if (spanTag) spanTag.innerText = 'AI is writing';
+        }
+
+        // Clear existing timeouts to prevent overlapping animation glitches
+        typingTimeouts.forEach(clearTimeout);
+        typingTimeouts = [];
+
+        // Slide container down
+        container.style.display = 'block';
+        setTimeout(() => container.classList.add('visible'), 10);
+
+        // Prep the cursor
+        target.innerHTML = '<span class="el-cursor" id="cursor-' + targetId + '" style="background:var(--color-accent)"></span>';
+        sendBtn.style.opacity = '0';
+
+        let i = 0;
+        let cursor = document.getElementById('cursor-' + targetId);
+
+        function tick() {
+            let chunk = text.substr(i, 3); // Hyper-speed typing (3 chars at a time)
+            if (chunk.length > 0) {
+                let lines = chunk.split('\n');
+                lines.forEach((line, index) => {
+                    if (index > 0) target.insertBefore(document.createElement('br'), cursor);
+                    if (line) target.insertBefore(document.createTextNode(line), cursor);
+                });
+                i += 3;
+                typingTimeouts.push(setTimeout(tick, 10));
+            } else {
+                if (cursor) cursor.style.display = 'none';
+                sendBtn.style.opacity = '1';
+                isTyping = false;
+
+                // Final state update for full width buttons
+                if (clickedBtn && (clickedBtn.id === 'btn-generate-0' || clickedBtn.id === 'btn-generate-1')) {
+                    clickedBtn.classList.remove('is-drafting');
+                    const strongTag = clickedBtn.querySelector('strong');
+                    const spanTag = clickedBtn.querySelector('span:not(.icon-inline)');
+                    if (strongTag) strongTag.innerText = 'Draft Generated';
+                    if (spanTag) spanTag.innerText = 'Ready for review';
+                }
+            }
+        }
+
+        // Wait 300ms for the slide-down CSS animation to finish before typing
+        typingTimeouts.push(setTimeout(tick, 300));
+    }
+
+    // --- CARD 0: Invoice Copy (Thornfield Brewery) ---
+    const btn0 = document.getElementById('btn-generate-0');
+    if (btn0) {
+        btn0.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (btn0.classList.contains('selected')) return;
+            typeDynamicEmail(
+                "\"Hey James,\n\nNo problem, I've attached a copy of the invoice and statement. Let me know if you need anything else.\n\nBest,\nSarah\"",
+                'tr-draft-container-0', 'tr-draft-target-0', 'tr-draft-send-0', btn0
+            );
+        });
+    }
+
+    // --- CARD 1: Email Change (Acorn Corp) ---
+    const btn1 = document.getElementById('btn-generate-1');
+    if (btn1) {
+        btn1.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (btn1.classList.contains('selected')) return;
+            typeDynamicEmail(
+                "\"Hi there,\n\nNo problem, I can confirm that the email has been updated on your account. Let us know if you need anything else.\n\nBest,\nSarah\"",
+                'tr-draft-container-1', 'tr-draft-target-1', 'tr-draft-send-1', btn1
+            );
+        });
+    }
+
+    // --- CARD 2: Branching Dispute (Blake & Sons) ---
+    const btnFound = document.getElementById('btn-payment-found');
+    const btnNotFound = document.getElementById('btn-payment-not-found');
+
+    if (btnFound && btnNotFound) {
+        btnFound.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (isTyping) return;
+            btnFound.classList.add('selected');
+            btnFound.classList.remove('dimmed');
+            btnNotFound.classList.add('dimmed');
+            btnNotFound.classList.remove('selected');
+            typeDynamicEmail(
+                "\"Hi Sarah,\n\nApologies for the confusion! I've checked our accounts and can confirm the payment has indeed cleared. I'll get this marked as paid right away.\n\nThanks for letting us know.\"",
+                'tr-draft-container-2', 'tr-draft-target-2', 'tr-draft-send-2', btnFound
+            );
+        });
+
+        btnNotFound.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (isTyping) return;
+            btnNotFound.classList.add('selected');
+            btnNotFound.classList.remove('dimmed');
+            btnFound.classList.add('dimmed');
+            btnFound.classList.remove('selected');
+            typeDynamicEmail(
+                "\"Hi Sarah,\n\nI've checked our bank feed but unfortunately can't see the payment yet. Could you provide the following so we can trace it?\n\n• Payment date\n• Account it was made to\n• Exact amount\n• Payment reference\n\nThanks!\"",
+                'tr-draft-container-2', 'tr-draft-target-2', 'tr-draft-send-2', btnNotFound
+            );
+        });
+    }
+})();
+</script>
+</body></html>
